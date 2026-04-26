@@ -1,0 +1,95 @@
+// ─────────────────────────────────────────────
+// Her dosyada yapılacak değişiklikler (kısa özet)
+// ─────────────────────────────────────────────
+
+// ── Register.jsx ──────────────────────────────
+// 1. Import ekle:
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
+
+// 2. Component içine ekle:
+const navigate = useNavigate();
+const { login } = useAuth();
+
+// 3. OtpScreen'deki onSuccess callback'ini bul:
+// ESKİ:  onSuccess={() => setStep("success")}
+// YENİ:  onSuccess={() => { login("mock-jwt-token-xyz"); navigate("/onboarding", { replace: true }); }}
+
+// 4. "Zaten hesabın var mı?" linkini güncelle:
+// ESKİ:  onClick={() => alert("→ /login sayfasına yönlendir")}
+// YENİ:  onClick={() => navigate("/login")}
+
+
+// ── RoundingSplash.jsx ───────────────────────
+// 1. Import ekle:
+import { useNavigate } from "react-router-dom";
+
+// 2. Component içine ekle:
+const navigate = useNavigate();
+
+// 3. handleContinue fonksiyonunda setDone(true) yerine:
+// ESKİ:  setDone(true)
+// YENİ:  navigate("/dashboard", { replace: true })
+
+// 4. "done" state'ini ve done ekranını tamamen silebilirsin (artık gerek yok)
+
+
+// ── Automation.jsx ───────────────────────────
+// 1. Import ekle:
+import { useNavigate } from "react-router-dom";
+
+// 2. Component içine ekle:
+const navigate = useNavigate();
+
+// 3. Navbar'daki onBack prop'unu güncelle:
+// ESKİ:  <Navbar onBack={() => {}} />
+// YENİ:  <Navbar onBack={() => navigate(-1)} />
+
+
+// ── Settings.jsx ─────────────────────────────
+// 1. Import ekle:
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
+
+// 2. Component içine ekle:
+const navigate = useNavigate();
+const { logout } = useAuth();
+
+// 3. LogoutModal onConfirm'i güncelle:
+// ESKİ:  onConfirm={() => { setShowLogout(false); setLoggedOut(true); }}
+// YENİ:  onConfirm={() => { setShowLogout(false); logout(); navigate("/login", { replace: true }); }}
+
+// 4. "loggedOut" state'ini ve loggedOut ekranını silebilirsin (artık gerek yok)
+
+// 5. Otomasyon butonunu güncelle:
+// ESKİ:  onClick={() => showToast("→ /automation sayfasına yönlendir")}
+// YENİ:  onClick={() => navigate("/automation")}
+
+// 6. Kart linki ekle (SectionCard içinde Row kullan veya yeni buton):
+// onClick={() => navigate("/cards")}
+
+
+// ── Dashboard.jsx ────────────────────────────
+// 1. Import ekle:
+import { useNavigate } from "react-router-dom";
+
+// 2. "Tümünü gör →" linkini güncelle:
+// ESKİ:  <span style={{...cursor:"pointer"}}>Tümünü gör →</span>
+// YENİ:  <span style={{...cursor:"pointer"}} onClick={() => navigate("/transactions")}>Tümünü gör →</span>
+// NOT: /transactions sayfası henüz yok, şimdilik yorum satırı bırakabilirsin
+
+
+// ─────────────────────────────────────────────
+// main.jsx — değişiklik gerekmez, sadece kontrol et:
+// ─────────────────────────────────────────────
+/*
+import React from "react";
+import ReactDOM from "react-dom/client";
+import App from "./App";
+
+ReactDOM.createRoot(document.getElementById("root")).render(
+  <React.StrictMode>
+    <App />
+  </React.StrictMode>
+);
+*/

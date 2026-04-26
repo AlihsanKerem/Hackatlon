@@ -1,3 +1,8 @@
+# ParaÜstü — Frontend Mimarisi
+*Son güncelleme: 26 Nisan 2026*
+
+---
+
 ## 1. Tech Stack
 
 | Araç | Versiyon | Açıklama |
@@ -9,11 +14,9 @@
 | **Axios** | - | API istekleri |
 | **Recharts** | - | Portföy grafikleri |
 
-Kurulum komutu:
 ```bash
 npm create vite@latest para-ustu -- --template react
-cd para-ustu
-npm install
+cd para-ustu && npm install
 npm install -D tailwindcss postcss autoprefixer
 npm install react-router-dom axios recharts
 npx tailwindcss init -p
@@ -23,37 +26,13 @@ npx tailwindcss init -p
 
 ## 2. Renk Sistemi
 
-Uygulama **açık mod** olarak tasarlanmıştır. Koyu mod hackathon kapsamında yoktur.
-
-`tailwind.config.js` içine eklenecek:
-
-```js
-theme: {
-  extend: {
-    colors: {
-      forest: '#012619',   // Ana yazı, navbar arkaplanı, başlıklar
-      green:  '#4EA664',   // Primary buton, pozitif değer, vurgu
-      mint:   '#78BF9E',   // İkon, secondary element, etiket
-      sage:   '#A9D9C2',   // Border, hover state, disabled
-      cream:  '#E8E5DE',   // Sayfa arkaplanı
-    }
-  }
-}
-```
-
-**Kullanım kuralları:**
-- Sayfa arkaplanı → `bg-cream`
-- Kart arkaplanı → `bg-white` + `border border-sage`
-- Navbar arkaplanı → `bg-forest`
-- Navbar yazı → `text-cream`
-- Ana yazı → `text-forest`
-- İkincil yazı → `text-forest/60`
-- Primary buton → `bg-green text-white`
-- Primary buton hover → `bg-green/90`
-- Pozitif değer (kar) → `text-green`
-- Negatif değer (zarar) → `text-red-500`
-- İkincil bilgi / ikonlar → `text-mint`
-- Border / ayraç → `border-sage`
+| Token | Hex | Kullanım |
+|-------|-----|---------|
+| `forest` | `#012619` | Navbar, başlıklar, ana yazı |
+| `green` | `#4EA664` | Primary buton, pozitif değer, vurgu |
+| `mint` | `#78BF9E` | İkon, secondary element |
+| `sage` | `#A9D9C2` | Border, disabled, ayraç |
+| `cream` | `#E8E5DE` | Sayfa arkaplanı |
 
 ---
 
@@ -62,301 +41,235 @@ theme: {
 ```
 src/
 ├── api/
-│   ├── axiosInstance.js     # Axios base config, interceptor (token ekleme)
-│   ├── authApi.js           # Kayıt, giriş endpoint'leri
-│   ├── cardApi.js           # Kart CRUD
-│   ├── transactionApi.js    # İşlem geçmişi (dış simülasyon uygulamasından gelir)
-│   ├── portfolioApi.js      # Portföy, alım/satım
-│   └── automationApi.js     # Otomasyon kural yönetimi
+│   ├── axiosInstance.js
+│   ├── authApi.js
+│   ├── cardApi.js
+│   ├── transactionApi.js
+│   ├── portfolioApi.js        # Hisse listesi (tüm BIST) + portföy
+│   └── automationApi.js       # Tek kural CRUD
 │
 ├── components/
-│   ├── ui/                  # Genel, tekrar kullanılan küçük componentler
-│   │   ├── Button.jsx
-│   │   ├── Card.jsx
-│   │   ├── Input.jsx
-│   │   ├── Badge.jsx
-│   │   └── Loader.jsx
+│   ├── ui/                    # Button, Card, Input, Badge, Loader
 │   ├── layout/
-│   │   ├── Navbar.jsx       # Üst navigasyon (sadece giriş sonrası)
-│   │   ├── Sidebar.jsx      # Sol menü (masaüstü)
-│   │   └── BottomNav.jsx    # Alt menü (mobil)
+│   │   ├── Navbar.jsx
+│   │   └── BottomNav.jsx      # Mobil alt nav: Kumbaram | Hisselerim | Ayarlar
 │   ├── cards/
-│   │   ├── CardItem.jsx     # Tek kart gösterimi
-│   │   └── AddCardModal.jsx # Kart ekleme formu
 │   ├── transactions/
-│   │   └── TransactionList.jsx # İşlem geçmişi listesi
 │   ├── portfolio/
-│   │   ├── StockRow.jsx     # Portföydeki tek hisse satırı
-│   │   └── ProfitBadge.jsx  # Kar/zarar göstergesi
 │   └── automation/
-│       └── RuleForm.jsx     # Otomasyon kural formu
+│       ├── StockSearchList.jsx   # Arama kutusu + hisse listesi
+│       └── AutomationPanel.jsx   # Kayar alt panel (seçili hisse kurulumu)
 │
 ├── pages/
-│   ├── Login.jsx
-│   ├── Register.jsx
-│   ├── Dashboard.jsx        # "Kumbaram" ve "Hisselerim" tabları burada
-│   ├── Cards.jsx
-│   └── Settings.jsx
+│   ├── Login.jsx              ✅
+│   ├── Register.jsx           ✅
+│   ├── RoundingSplash.jsx     ✅
+│   ├── Dashboard.jsx          ✅  (Kumbaram + Hisselerim tabları)
+│   ├── Cards.jsx              ✅
+│   ├── Automation.jsx         🔜  (yeni)
+│   └── Settings.jsx           🔜  (yeni)
 │
 ├── context/
-│   └── AuthContext.jsx      # JWT token ve kullanıcı bilgisi global state
-│
+│   └── AuthContext.jsx
 ├── hooks/
-│   ├── useAuth.js           # AuthContext'e erişim hook'u
-│   └── usePortfolio.js      # Portföy verisi fetch hook'u
-│
-├── utils/
-│   ├── formatCurrency.js    # "1234.50" → "1.234,50 ₺"
-│   ├── formatDate.js        # Tarih formatlama
-│   └── roundup.js           # Yuvarlama algoritması (frontend önizleme için)
-│
-├── App.jsx                  # Router tanımları
-└── main.jsx                 # Entry point
+│   ├── useAuth.js
+│   └── usePortfolio.js
+└── utils/
+    ├── formatCurrency.js
+    ├── formatDate.js
+    └── roundup.js
 ```
 
+---
+
+## 4. Sayfa Listesi
+
+### 4.1–4.3 Login / Register / RoundingSplash ✅
+*(değişiklik yok)*
 
 ---
 
-## 4. Sayfa Listesi ve İçerikleri
+### 4.4 Dashboard (`/dashboard`) ✅ — küçük güncelleme
 
-### 4.1 Login (`/login`)
-- Email + şifre formu
-- "Giriş Yap" butonu
-- "Hesabın yok mu? Kayıt ol" linki
-- Hatalı giriş → kırmızı uyarı mesajı
+**"Kumbaram" tab:**
+- Biriken para üstü bakiyesi
+- **"Yuvarlama Ayarı" butonu** → `/settings` sayfasına yönlendirir
+- Aktif otomasyon özeti (varsa): `"100 TL → THYAO.IS"` — tıklanınca `/automation`'a gider
+- Son 5 işlem listesi
 
-### 4.2 Register (`/register`)
-- Ad soyad, email, telefon
-- 6 haneli PIN + PIN tekrar
-- Telefon OTP doğrulama adımı
-- Yuvarlama tercihi bu adımda **sorulmaz** — dashboard'a ilk girişte ayrı splash ekranında gösterilir
-
-### 4.3 Rounding Splash (`/dashboard` ilk girişte, modal/overlay değil tam ekran)
-Kullanıcının tüm yuvarlama tercihleri `null` ise dashboard render edilmeden önce gösterilir.
-
-4 aralık için ayrı ayrı seçim yapılır (accordion düzeni):
-- **10 TL altı** → 1 / 5 / 10 TL
-- **10–100 TL arası** → 1 / 5 / 10 / 50 / 100 TL
-- **100–1.000 TL arası** → 1 / 10 / 50 / 100 / 1.000 TL
-- **1.000 TL üzeri** → 1 / 10 / 100 / 1.000 / 10.000 TL
-
-Her seçenek için o aralığa uygun örnek tutar ve tahmini para üstü gösterilir.
-Tüm aralıklar seçilmeden "Devam Et" butonu aktif olmaz.
-Seçimler `PUT /users/rounding-preferences` ile kaydedilir, ardından dashboard'a yönlendirilir.
-
-> Kullanıcı ayarlar sayfasından bu tercihleri her zaman değiştirebilir.
-# ParaÜstü — Frontend Mimarisi
-
-Bu doküman, frontend geliştirme sürecinde tüm kararları, klasör yapısını, sayfa listesini, component hiyerarşisini ve API entegrasyonunu kapsar.
+**"Hisselerim" tab:**
+- Toplam portföy değeri + kar/zarar
+- Hisse listesi (sembol, adet, fiyat, kar/zarar)
+- **"Otomasyon Kur" / "Otomasyonu Düzenle" butonu** → `/automation`'a yönlendirir
+- Manuel alım/satım
 
 ---
 
-### 4.4 Dashboard (`/dashboard`) — Ana Sayfa
-
-> **Önemli:** Harcama simülasyonu bu uygulamada yoktur. Simülasyon ayrı bir uygulama üzerinden yapılacak, işlemler backend'e oradan gelecektir. Bu uygulama gerçek banka uygulaması gibi davranır.
-
-Üst kısım:
-- Selamlama: "Merhaba, [Ad]"
-- İki tab butonu: **Kumbaram** | **Hisselerim**
-- Tab değişince içerik değişir, URL aynı kalır (`/dashboard`)
-
-**"Kumbaram" Tab İçeriği:**
-- Biriken para üstü bakiyesi (büyük, vurgulu)
-- Aktif otomasyon kural özeti (varsa): "100 TL → THYAO.IS"
-- Son 5 işlem listesi (tarih, satıcı, orijinal tutar, para üstü)
-- "Tüm işlemleri gör" linki
-
-**"Hisselerim" Tab İçeriği:**
-- Toplam portföy değeri
-- Toplam kar/zarar (TL ve %)
-- Hisse listesi (sembol, adet, anlık fiyat, kar/zarar)
-- Manuel alım/satım butonu
-
-### 4.5 Cards (`/cards`) — Kart Yönetimi
-- Kullanıcının kartları (her biri masked numarayla gösterilir: `**** 1234`)
-  - Banka adı
-  - Aktif/Pasif toggle
-  - Sil butonu
-- "Yeni Kart Ekle" butonu → Modal açılır
-  - Banka seç: A Bankası / B Bankası
-  - Kart numarası (16 hane, otomatik boşluk)
-  - Son kullanma tarihi (MM/YY)
-  - CVV (form gönderilince unutulur, saklanmaz)
-
-### 4.6 Portfolio (`/portfolio`) — Portföy
-Üst kısım:
-- Toplam portföy değeri
-- Toplam kar/zarar (TL ve %)
-
-Liste:
-- Her hisse için bir satır:
-  - Sembol (THYAO.IS)
-  - Adet
-  - Ortalama maliyet
-  - Güncel fiyat (API'den anlık)
-  - Kar/zarar (yeşil/kırmızı)
-  - "Sat" butonu → miktar gir, onayla
-
-Alt kısım:
-- Manuel alım formu:
-  - Sembol gir (veya listeden seç)
-  - Miktar
-  - "Roundup bakiyemden al" veya "Direkt öde" seçeneği
-  - "Al" butonu
-
-### 4.7 Settings (`/settings`) — Ayarlar
-- Yuvarlama tercihi değiştirme
-- Otomasyon kuralı:
-  - Aktif/Pasif toggle
-  - Eşik tutarı (ör. 100 TL)
-  - Hedef hisse seçimi
-- Şifre değiştirme (opsiyonel, zamana göre)
-- Çıkış Yap butonu
+### 4.5 Cards (`/cards`) ✅
+*(değişiklik yok)*
 
 ---
 
-## 5. Navigasyon (Routing)
+### 4.6 Automation (`/automation`) 🔜 YENİ
+
+**Amaç:** Kullanıcı biriken para üstü belirli bir eşiği geçince hangi hisseyi otomatik alsın seçer. Tek aktif kural olabilir.
+
+**Layout (mobil öncelikli, tek sütun):**
 
 ```
-/                   → /dashboard'a yönlendir (giriş varsa) veya /login
-/login              → Login sayfası (giriş varsa /dashboard'a yönlendir)
-/register           → Register sayfası
-/dashboard          → Ana sayfa, Kumbaram + Hisselerim tabları [Korumalı]
+┌─────────────────────────────┐
+│  ← Geri    Otomasyon        │  ← Navbar / başlık
+├─────────────────────────────┤
+│  Mevcut kural özeti         │  ← varsa göster (aktif/pasif toggle)
+├─────────────────────────────┤
+│  🔍 Hisse ara...            │  ← arama kutusu
+│  ─────────────────────────  │
+│  THYAO.IS  Türk Hava Yolları│
+│  BIMAS.IS  BİM Mağazalar    │  ← API'den gelen liste (filtrelenir)
+│  AKBNK.IS  Akbank           │
+│  ...                        │
+└─────────────────────────────┘
+         ↓ hisseye tıklanınca
+┌─────────────────────────────┐
+│  ████████████████████████   │  ← backdrop
+│                             │
+│  ┌─────────────────────┐   │
+│  │ THYAO.IS seçildi    │   │
+│  │ Eşik: [___] TL      │   │  ← kayar alt panel (bottom sheet)
+│  │ Her [___] TL'de 1 adet al│
+│  │ [Otomasyonu Kaydet] │   │
+│  └─────────────────────┘   │
+└─────────────────────────────┘
+```
+
+**Detaylar:**
+- API'den tüm BIST hisseleri çekilir: `GET /stocks` → `[{ symbol, name, price }]`
+- Arama kutusu sembol veya şirket adına göre anlık filtreler
+- Mevcut aktif kural varsa sayfanın üstünde özet kart gösterilir (aktif/pasif toggle + sil)
+- Hisseye tıklanınca **bottom sheet** kayar (aynı sayfa, modal değil)
+- Bottom sheet içeriği:
+  - Seçili hisse adı + güncel fiyat
+  - **Eşik tutarı** inputu: "Biriken para üstü bu tutara ulaşınca al" (ör. 100 TL)
+  - **Kaydet** butonu → `POST /automation/rule { symbol, threshold }`
+  - Mevcut kural varsa "Mevcut kural silinecek, devam et?" uyarısı
+- Kayıt sonrası bottom sheet kapanır, üstteki özet kart güncellenir
+
+**API:**
+```js
+GET  /stocks                          → [{ symbol, name, price, sector }]
+GET  /automation/rule                 → { symbol, threshold, isActive } | null
+POST /automation/rule  { symbol, threshold }  → kural oluştur/güncelle
+PUT  /automation/rule  { isActive }           → aktif/pasif toggle
+DELETE /automation/rule                       → kuralı sil
+```
+
+---
+
+### 4.7 Settings (`/settings`) 🔜 YENİ
+
+**Bölümler:**
+
+1. **Yuvarlama Tercihi**
+   - Mevcut seçimler özet olarak listelenir (4 aralık)
+   - "Düzenle" → RoundingSplash ekranını tekrar göster (modal veya ayrı sayfa)
+
+2. **Otomasyon**
+   - Mevcut kural özeti (varsa)
+   - "Düzenle" → `/automation`'a yönlendir
+
+3. **Hesap**
+   - Şifre / PIN değiştirme (opsiyonel, zamana göre)
+   - **Çıkış Yap** butonu
+
+---
+
+## 5. Navigasyon
+
+```
+/                   → /dashboard (token varsa) veya /login
+/login              → Login
+/register           → Register
+/dashboard          → Ana sayfa [Korumalı]
 /cards              → Kart yönetimi [Korumalı]
+/automation         → Otomasyon [Korumalı]
 /settings           → Ayarlar [Korumalı]
 ```
 
-**Korumalı route:** Token yoksa otomatik `/login`'e yönlendir.
-
-### App.jsx yapısı:
+### App.jsx:
 ```jsx
 <Routes>
-  {/* Public */}
-  <Route path="/login" element={<Login />} />
+  <Route path="/login"    element={<Login />} />
   <Route path="/register" element={<Register />} />
-
-  {/* Protected */}
   <Route element={<PrivateRoute />}>
-    <Route path="/dashboard" element={<Dashboard />} />
-    <Route path="/cards" element={<Cards />} />
-    <Route path="/settings" element={<Settings />} />
+    <Route path="/dashboard"   element={<Dashboard />} />
+    <Route path="/cards"       element={<Cards />} />
+    <Route path="/automation"  element={<Automation />} />
+    <Route path="/settings"    element={<Settings />} />
   </Route>
-
-  {/* Default */}
   <Route path="*" element={<Navigate to="/dashboard" />} />
 </Routes>
 ```
 
+### BottomNav (mobil):
+```
+[ 🏠 Kumbaram ] [ 📈 Hisselerim ] [ ⚙️ Ayarlar ]
+```
+- Kumbaram → `/dashboard` (kumbaras tab)
+- Hisselerim → `/dashboard` (hisselerim tab)
+- Ayarlar → `/settings`
+
 ---
 
-## 6. JWT Token Yönetimi
+## 6. JWT & Auth
+*(değişiklik yok — localStorage + AuthContext + Axios interceptor)*
 
-Token `localStorage`'da tutulacak:
+---
+
+## 7. API Endpoint Özeti
 
 ```js
-// Giriş sonrası
-localStorage.setItem('token', response.data.token)
+// Auth
+POST /auth/register
+POST /auth/login
 
-// Çıkış
-localStorage.removeItem('token')
-```
+// Cards
+GET    /cards
+POST   /cards
+DELETE /cards/:id
 
-**AuthContext (`context/AuthContext.jsx`):**
-- Token'ı okur, kullanıcı bilgisini tutar
-- `login()`, `logout()` fonksiyonları sağlar
-- Tüm app bunu kullanır
+// Transactions
+GET  /transactions
+POST /transactions/simulate
 
-**Axios interceptor (`api/axiosInstance.js`):**
-- Her API isteğine otomatik token ekler
-- 401 gelirse `/login`'e yönlendirir
+// Portfolio
+GET  /portfolio
+POST /portfolio/buy   { symbol, quantity, source }
+POST /portfolio/sell  { symbol, quantity }
 
-```js
-instance.interceptors.request.use(config => {
-  const token = localStorage.getItem('token')
-  if (token) config.headers.Authorization = `Bearer ${token}`
-  return config
-})
-```
+// Stocks (YENİ)
+GET  /stocks          → tüm BIST hisseleri [{ symbol, name, price, sector }]
 
----
+// Automation (güncellendi)
+GET    /automation/rule
+POST   /automation/rule   { symbol, threshold }
+PUT    /automation/rule   { isActive }
+DELETE /automation/rule
 
-## 7. API Endpoint Bağlantıları
-
-```js
-// axiosInstance.js
-const BASE_URL = 'http://localhost:8080/api'  // Backend adresi
-
-// authApi.js
-POST /auth/register   { email, password, roundingPreference }
-POST /auth/login      { email, password } → { token }
-
-// cardApi.js
-GET    /cards              → Kullanıcının kartları
-POST   /cards              → Yeni kart ekle
-DELETE /cards/:id          → Kart sil
-
-// transactionApi.js
-POST   /transactions/simulate    { cardId, merchant, amount } → { charged, roundup }
-GET    /transactions             → İşlem geçmişi
-
-// portfolioApi.js
-GET    /portfolio                → Portföy (kar/zarar anlık hesaplanır)
-POST   /portfolio/buy            { symbol, quantity, source }
-POST   /portfolio/sell           { symbol, quantity }
-GET    /portfolio/history        → Alım/satım geçmişi
-
-// automationApi.js
-GET    /automation/rule          → Aktif kural
-POST   /automation/rule          { symbol, threshold }
-PUT    /automation/rule          { isActive }
+// User
+PUT /users/rounding-preferences
 ```
 
 ---
 
-## 8. Responsive Tasarım
+## 8. Geliştirme Sırası (güncel)
 
-- **Mobil (<768px):** Alt navigasyon bar (BottomNav), tek sütun layout
-- **Tablet/Desktop (≥768px):** Sol sidebar, çok sütun layout
-
-Tailwind breakpoint kullanımı:
-```jsx
-<div className="flex flex-col md:flex-row">
-  <Sidebar className="hidden md:block" />
-  <BottomNav className="block md:hidden" />
-  <main className="flex-1">...</main>
-</div>
-```
-
----
-
-## 9. Öncelik Sırası (Geliştirme Sırası)
-
-1. **Login / Register** → Olmadan hiçbir şey test edilemez
-2. **Dashboard — Kumbaram tab'ı** → Biriken bakiye ve işlem geçmişi
-3. **Dashboard — Hisselerim tab'ı** → Portföy özeti ve alım/satım
-4. **Kart Yönetimi** → Kart ekleme/silme/görüntüleme
-5. **Ayarlar** → Otomasyon kuralı ve yuvarlama tercihi
-
----
-
-## 10. Claude ile Çalışma Stratejisi
-
-Her component için yeni konuşma aç ve şu template'i kullan:
-
-```
-Renk sistemim şu:
-- forest: #012619 (arkaplan)
-- green: #4EA664 (primary)
-- mint: #78BF9E (secondary)
-- sage: #A9D9C2 (border/hover)
-- cream: #E8E5DE (yazı/kart)
-
-React + Tailwind CSS kullanıyorum.
-Sade, modern, fintech görünümü istiyorum.
-
-[Component adı] component'ini yaz. İçeriği şu olsun: [detay]
-```
-
----
-
-*Son güncelleme: 26 Nisan 2026*
+| # | Sayfa / Bileşen | Durum |
+|---|----------------|-------|
+| 1 | Login | ✅ |
+| 2 | Register + OTP | ✅ |
+| 3 | Rounding Splash | ✅ |
+| 4 | Dashboard | ✅ |
+| 5 | Cards | ✅ |
+| 6 | Automation | ✅ |
+| 7 | Settings | ✅ |
+| 8 | Dashboard küçük güncellemeler | ✅ |

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 const C = {
   forest: "#012619",
@@ -69,6 +70,7 @@ function CoinIcon({ size = 28 }) {
 }
 
 export default function RoundingSplash() {
+  const navigate = useNavigate();
   const [selections, setSelections] = useState({ under10: null, under100: null, under1000: null, under10000: null });
   const [saving, setSaving] = useState(false);
   const [done, setDone] = useState(false);
@@ -86,9 +88,12 @@ export default function RoundingSplash() {
   const handleContinue = async () => {
     if (!allSelected) return;
     setSaving(true);
-    await new Promise(r => setTimeout(r, 900));
+    await new Promise(r => setTimeout(r, 1200));
     setSaving(false);
     setDone(true);
+    setTimeout(() => {
+      navigate("/dashboard", { replace: true });
+    }, 1500);
   };
 
   if (done) {
@@ -167,7 +172,6 @@ export default function RoundingSplash() {
                 overflow: "hidden",
                 transition: "border-color 0.2s",
               }}>
-                {/* Tier header */}
                 <button
                   onClick={() => setExpandedTier(isExpanded ? null : tier.id)}
                   style={{
@@ -209,7 +213,6 @@ export default function RoundingSplash() {
                   </svg>
                 </button>
 
-                {/* Options */}
                 {isExpanded && (
                   <div style={{ padding: "0 0.75rem 0.75rem", display: "flex", flexWrap: "wrap", gap: 8 }}>
                     {tier.options.map(opt => {
@@ -224,7 +227,7 @@ export default function RoundingSplash() {
                             padding: "0.6rem 0.5rem",
                             borderRadius: 10,
                             border: `1.5px solid ${isSel ? C.green : C.sage}`,
-                            backgroundColor: isSel ? C.green + "12" : C.cream + "80",
+                            backgroundColor: isSel ? C.green + "12" : "transparent",
                             cursor: "pointer",
                             textAlign: "center",
                             fontFamily: "inherit",
@@ -238,7 +241,7 @@ export default function RoundingSplash() {
                           <p style={{
                             color: isSel ? C.green : C.mint,
                             fontSize: 11, fontWeight: 600, margin: 0,
-                          }}>+{opt.roundup}</p>
+                          }}>{opt.roundup}</p>
                         </button>
                       );
                     })}
@@ -249,7 +252,6 @@ export default function RoundingSplash() {
           })}
         </div>
 
-        {/* Continue */}
         <button
           onClick={handleContinue}
           disabled={!allSelected || saving}

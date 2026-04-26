@@ -1,4 +1,6 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 
 const mockRegister = async (data) => {
   await new Promise(r => setTimeout(r, 1000));
@@ -165,7 +167,7 @@ function OtpScreen({ phone, onSuccess }) {
       <p style={{ textAlign: "center", fontSize: 13, color: C.forest + "60", margin: 0 }}>
         Kod gelmedi mi?{" "}
         <span style={{ color: C.green, fontWeight: 600, cursor: "pointer" }}
-          onClick={() => alert("Kod tekrar gönderildi (mock)")}>
+          onClick={() => console.log("Kod tekrar gönderildi (mock)")}>
           Tekrar gönder
         </span>
       </p>
@@ -182,6 +184,8 @@ function OtpScreen({ phone, onSuccess }) {
 }
 
 export default function Register() {
+  const navigate = useNavigate();
+  const { login } = useAuth();
   const [step, setStep] = useState("form"); // form | otp | success
   const [form, setForm] = useState({ fullName: "", email: "", phone: "", pin: "", pinConfirm: "" });
   const [focused, setFocused] = useState(null);
@@ -226,6 +230,16 @@ export default function Register() {
   };
 
   const fullPhone = `+90 ${form.phone}`;
+
+  useEffect(() => {
+    if (step === "success") {
+      const timer = setTimeout(() => {
+        login("mock-token-from-register");
+        navigate("/dashboard", { replace: true });
+      }, 2000);
+      return () => clearTimeout(timer);
+    }
+  }, [step, navigate, login]);
 
   return (
     <div style={{
@@ -377,7 +391,7 @@ export default function Register() {
           <p style={{ textAlign: "center", fontSize: 14, color: C.forest + "80", marginTop: "1.25rem" }}>
             Zaten hesabın var mı?{" "}
             <span style={{ color: C.green, fontWeight: 600, cursor: "pointer" }}
-              onClick={() => alert("→ /login sayfasına yönlendir")}>
+              onClick={() => navigate("/login")}>
               Giriş yap
             </span>
           </p>

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import Navbar from "../components/Navbar";
 
 const C = {
   forest: "#012619",
@@ -40,81 +41,6 @@ function calcPortfolio(stocks) {
   const pnl    = totalValue - totalCost;
   const pnlPct = totalCost > 0 ? (pnl / totalCost) * 100 : 0;
   return { totalValue, pnl, pnlPct };
-}
-
-// ── Sub-components ─────────────────────────────────────────
-function Navbar({ active, setActive }) {
-  const tabs = [
-    { id: "kumbaras", label: "Kumbaram", icon: (
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-        <circle cx="12" cy="12" r="9.5" stroke="currentColor" strokeWidth="1.6"/>
-        <path d="M9.5 9.5C9.5 8.67 10.17 8 11 8h2c.83 0 1.5.67 1.5 1.5S13.83 11 13 11h-2c-.83 0-1.5.67-1.5 1.5S10.17 14 11 14h2c.83 0 1.5-.67 1.5-1.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"/>
-        <path d="M12 6v2M12 16v2" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"/>
-      </svg>
-    )},
-    { id: "hisselerim", label: "Hisselerim", icon: (
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-        <polyline points="3,17 8,12 12,15 16,9 21,7" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"/>
-        <path d="M17 7h4v4" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"/>
-      </svg>
-    )},
-  ];
-
-  return (
-    <nav style={{
-      backgroundColor: C.forest,
-      padding: "0 1rem",
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "space-between",
-      height: 52,
-      flexShrink: 0,
-    }}>
-      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-          <circle cx="12" cy="12" r="9.5" stroke={C.sage} strokeWidth="1.2"/>
-          <path d="M9.5 9.5C9.5 8.67 10.17 8 11 8h2c.83 0 1.5.67 1.5 1.5S13.83 11 13 11h-2c-.83 0-1.5.67-1.5 1.5S10.17 14 11 14h2c.83 0 1.5-.67 1.5-1.5" stroke={C.green} strokeWidth="1.8" strokeLinecap="round"/>
-          <path d="M12 6v2M12 16v2" stroke={C.mint} strokeWidth="1.8" strokeLinecap="round"/>
-        </svg>
-        <span style={{ color: C.cream, fontWeight: 600, fontSize: 15, letterSpacing: "0.01em" }}>ParaÜstü</span>
-      </div>
-
-      <div style={{ display: "flex", gap: 4 }}>
-        {tabs.map(t => (
-          <button
-            key={t.id}
-            onClick={() => setActive(t.id)}
-            style={{
-              display: "flex", alignItems: "center", gap: 6,
-              padding: "0.4rem 0.75rem",
-              borderRadius: 8,
-              border: "none",
-              backgroundColor: active === t.id ? C.green + "30" : "transparent",
-              color: active === t.id ? C.green : C.cream + "99",
-              fontSize: 13, fontWeight: active === t.id ? 600 : 400,
-              cursor: "pointer",
-              transition: "all 0.15s",
-              fontFamily: "inherit",
-            }}
-          >
-            {t.icon}
-            {t.label}
-          </button>
-        ))}
-      </div>
-
-      <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-        <div style={{
-          width: 30, height: 30, borderRadius: "50%",
-          backgroundColor: C.green + "30",
-          display: "flex", alignItems: "center", justifyContent: "center",
-          fontSize: 12, fontWeight: 600, color: C.green,
-        }}>
-          AK
-        </div>
-      </div>
-    </nav>
-  );
 }
 
 // Kumbaram Tab
@@ -487,16 +413,10 @@ export default function Dashboard() {
   const [activeTab, setActiveTab] = useState("kumbaras");
 
   return (
-    <div style={{
-      minHeight: "100vh",
-      backgroundColor: C.cream,
-      display: "flex",
-      flexDirection: "column",
-      fontFamily: "system-ui, -apple-system, sans-serif",
-    }}>
-      <Navbar active={activeTab} setActive={setActiveTab} />
+    <div style={{ backgroundColor: C.cream, minHeight: "100vh" }}>
+      <Navbar />
 
-      <main style={{ flex: 1, padding: "1.25rem 1rem", maxWidth: 480, margin: "0 auto", width: "100%", boxSizing: "border-box" }}>
+      <main style={{ padding: "1.25rem 1rem", maxWidth: 480, margin: "0 auto", width: "100%", boxSizing: "border-box" }}>
         {/* Selamlama */}
         <div style={{ marginBottom: "1.25rem" }}>
           <h1 style={{ fontSize: 20, fontWeight: 700, color: C.forest, margin: "0 0 3px" }}>
@@ -505,6 +425,35 @@ export default function Dashboard() {
           <p style={{ fontSize: 13, color: C.forest + "60", margin: 0 }}>
             {new Date().toLocaleDateString("tr-TR", { weekday: "long", day: "numeric", month: "long" })}
           </p>
+        </div>
+
+        {/* Tab Switcher */}
+        <div style={{
+          display: "flex", gap: 6, marginBottom: "1.25rem",
+          backgroundColor: C.forest, padding: 4, borderRadius: 10
+        }}>
+          <button
+            onClick={() => setActiveTab("kumbaras")}
+            style={{
+              flex: 1, padding: "8px", borderRadius: 7, border: "none",
+              backgroundColor: activeTab === "kumbaras" ? C.green : "transparent",
+              color: activeTab === "kumbaras" ? "#fff" : C.mint,
+              fontSize: 13, fontWeight: 600, cursor: "pointer", transition: "all 0.2s"
+            }}
+          >
+            Kumbaram
+          </button>
+          <button
+            onClick={() => setActiveTab("hisselerim")}
+            style={{
+              flex: 1, padding: "8px", borderRadius: 7, border: "none",
+              backgroundColor: activeTab === "hisselerim" ? C.green : "transparent",
+              color: activeTab === "hisselerim" ? "#fff" : C.mint,
+              fontSize: 13, fontWeight: 600, cursor: "pointer", transition: "all 0.2s"
+            }}
+          >
+            Hisselerim
+          </button>
         </div>
 
         {activeTab === "kumbaras" ? <KumbaramTab /> : <HisselerimTab />}

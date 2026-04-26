@@ -1,4 +1,5 @@
 import { useState } from "react";
+import Navbar from "../components/Navbar";
 
 const C = {
   forest: "#012619",
@@ -346,33 +347,8 @@ export default function Cards() {
   };
 
   return (
-    <div style={{
-      minHeight: "100vh",
-      backgroundColor: C.cream,
-      fontFamily: "system-ui, -apple-system, sans-serif",
-    }}>
-      {/* Navbar */}
-      <nav style={{
-        backgroundColor: C.forest,
-        padding: "0 1rem",
-        display: "flex", alignItems: "center", justifyContent: "space-between",
-        height: 52, flexShrink: 0,
-      }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-            <circle cx="12" cy="12" r="9.5" stroke={C.sage} strokeWidth="1.2"/>
-            <path d="M9.5 9.5C9.5 8.67 10.17 8 11 8h2c.83 0 1.5.67 1.5 1.5S13.83 11 13 11h-2c-.83 0-1.5.67-1.5 1.5S10.17 14 11 14h2c.83 0 1.5-.67 1.5-1.5" stroke={C.green} strokeWidth="1.8" strokeLinecap="round"/>
-            <path d="M12 6v2M12 16v2" stroke={C.mint} strokeWidth="1.8" strokeLinecap="round"/>
-          </svg>
-          <span style={{ color: C.cream, fontWeight: 600, fontSize: 15, letterSpacing: "0.01em" }}>ParaÜstü</span>
-        </div>
-        <div style={{
-          width: 30, height: 30, borderRadius: "50%",
-          backgroundColor: C.green + "30",
-          display: "flex", alignItems: "center", justifyContent: "center",
-          fontSize: 12, fontWeight: 600, color: C.green,
-        }}>AK</div>
-      </nav>
+    <div style={{ backgroundColor: C.cream, minHeight: "100vh" }}>
+      <Navbar title="Kartlarım" />
 
       <main style={{ padding: "1.25rem 1rem", maxWidth: 480, margin: "0 auto", width: "100%", boxSizing: "border-box" }}>
         {/* Başlık */}
@@ -531,7 +507,7 @@ export default function Cards() {
       {/* Toast */}
       {toast && (
         <div style={{
-          position: "fixed", bottom: 24, left: "50%",
+          position: "fixed", bottom: 80, left: "50%",
           transform: "translateX(-50%)",
           backgroundColor: C.forest,
           color: "#fff", fontSize: 13, fontWeight: 500,
