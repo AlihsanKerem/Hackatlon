@@ -7,5 +7,6 @@ import org.springframework.boot.runApplication
 class BackendApplication
 
 fun main(args: Array<String>) {
-	runApplication<BackendApplication>(*args)
+    println("--- SIFRE KONTROL: ${System.getProperty("spring.datasource.password")} ---")
+    runApplication<BackendApplication>(*args)
 }

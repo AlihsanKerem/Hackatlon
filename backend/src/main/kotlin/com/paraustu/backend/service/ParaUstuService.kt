@@ -1,22 +1,34 @@
 package com.paraustu.backend.service
 
+import com.paraustu.backend.model.Islem
+import com.paraustu.backend.repository.IslemRepository
 import org.springframework.stereotype.Service
 import kotlin.math.ceil
 
 @Service
-class ParaUstuService {
+class ParaUstuService(private val islemRepository: IslemRepository) {
 
-    // Temel yuvarlama mantığı
-    fun hesapla(tutar: Double, yuvarlamaTipi: Int): Double {
+    fun hesaplaVeKaydet(harcama: Double, yuvarlamaTipi: Int): Islem {
+        // 1. Hesaplama Mantığı
         val hedef = when (yuvarlamaTipi) {
-            1 -> ceil(tutar) // 18.40 -> 19.00
-            5 -> ceil(tutar / 5.0) * 5.0 // 18.40 -> 20.00
-            10 -> ceil(tutar / 10.0) * 10.0 // 18.40 -> 20.00
-            else -> ceil(tutar)
+            1 -> ceil(harcama)
+            5 -> ceil(harcama / 5.0) * 5.0
+            10 -> ceil(harcama / 10.0) * 10.0
+            else -> ceil(harcama)
         }
         
-        // Aradaki farkı (biriken parayı) döndür
-        val fark = hedef - tutar
-        return "%.2f".format(fark).replace(",", ".").toDouble()
+        val fark = hedef - harcama
+        // Virgülden sonraki hataları engellemek için küçük bir yuvarlama
+        val temizFark = String.format("%.2f", fark).replace(",", ".").toDouble()
+
+        // 2. Veritabanı Nesnesini Oluşturma
+        val yeniIslem = Islem(
+            harcamaTutari = harcama,
+            birikenPara = temizFark,
+            yuvarlamaTipi = yuvarlamaTipi
+        )
+
+        // 3. Veritabanına Kaydetme
+        return islemRepository.save(yeniIslem)
     }
 }

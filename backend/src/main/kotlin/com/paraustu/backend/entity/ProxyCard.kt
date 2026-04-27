@@ -3,7 +3,7 @@ package com.paraustu.entity
 import jakarta.persistence.*
 import java.math.BigDecimal
 import java.time.LocalDateTime
-import java.util.UUIDT
+import java.util.UUID
 
 @Entity
 @Table(name = "proxy_cards")
