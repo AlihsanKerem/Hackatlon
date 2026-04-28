@@ -331,21 +331,71 @@ export default function Automation() {
     );
   }, [query]);
 
-  const handleSave = ({ symbol, threshold }) => {
-    setActiveRule({ symbol, threshold, isActive: true });
-    setSelectedStock(null);
-    showToast("Otomasyon kuralı kaydedildi");
+  const handleSave = async ({ symbol, threshold }) => {
+    try {
+      const res = await fetch('/api/automation/save', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ active: true, symbol, threshold })
+      });
+      if (res.ok) {
+        setActiveRule({ symbol, threshold, isActive: true });
+        setSelectedStock(null);
+        showToast("Otomasyon kuralı kaydedildi");
+      } else {
+        showToast("Hata: Kural kaydedilemedi");
+      }
+    } catch (e) {
+      showToast("Sunucu hatası");
+    }
   };
 
-  const handleToggle = () => {
-    setActiveRule(r => ({ ...r, isActive: !r.isActive }));
-    showToast(activeRule.isActive ? "Otomasyon duraklatıldı" : "Otomasyon aktif edildi");
+  const handleToggle = async () => {
+    const newState = !activeRule.isActive;
+    try {
+      const res = await fetch('/api/automation/save', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ 
+          active: newState, 
+          symbol: activeRule.symbol, 
+          threshold: activeRule.threshold 
+        })
+      });
+      if (res.ok) {
+        setActiveRule(r => ({ ...r, isActive: newState }));
+        showToast(newState ? "Otomasyon aktif edildi" : "Otomasyon duraklatıldı");
+      } else {
+        showToast("Hata: Durum güncellenemedi");
+      }
+    } catch (e) {
+      showToast("Sunucu hatası");
+    }
   };
 
-  const handleDelete = () => {
-    setActiveRule(null);
-    showToast("Kural silindi");
+  const handleDelete = async () => {
+    try {
+      const res = await fetch('/api/automation', {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (res.ok) {
+        setActiveRule(null);
+        showToast("Kural silindi");
+      } else {
+        showToast("Hata: Kural silinemedi");
+      }
+    } catch (e) {
+      showToast("Sunucu hatası");
+    }
   };
+
 
   if (loading) {
     return <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', backgroundColor: C.cream, color: C.forest }}>Yükleniyor...</div>;

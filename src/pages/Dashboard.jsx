@@ -54,7 +54,7 @@ function KumbaramTab({ data }) {
           Biriken Para Üstü
         </p>
         <p style={{ color: "#fff", fontSize: 40, fontWeight: 700, margin: "0 0 4px", letterSpacing: "-0.02em" }}>
-          {fmt(computedBalance)} ₺
+          {fmt(balance.roundupBalance)} ₺
         </p>
         {automation?.active && (
           <div style={{
@@ -98,14 +98,14 @@ function KumbaramTab({ data }) {
           <div style={{ padding: "1.5rem", textAlign: "center", color: C.forest + "70", fontSize: 13 }}>
             Henüz işleminiz bulunmamaktadır.
           </div>
-        ) : transactions.map((tx, i) => (
+        ) : transactions.slice(0, 5).map((tx, i) => (
           <div
             key={tx.id}
             style={{
               display: "flex",
               alignItems: "center",
               padding: "0.75rem 1rem",
-              borderBottom: i < transactions.length - 1 ? `1px solid ${C.sage}40` : "none",
+              borderBottom: i < Math.min(transactions.length, 5) - 1 ? `1px solid ${C.sage}40` : "none",
             }}
           >
             {/* Merchant icon */}
