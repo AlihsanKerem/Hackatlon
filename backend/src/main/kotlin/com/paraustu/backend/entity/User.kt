@@ -1,4 +1,4 @@
-package com.paraustu.entity
+package com.paraustu.backend.entity
 
 import jakarta.persistence.*
 import java.math.BigDecimal
@@ -10,6 +10,8 @@ import java.util.UUID
 class User {
     @Id @GeneratedValue(strategy = GenerationType.UUID)
     var id: UUID? = null
+    
+    var fullName: String? = null
     
     @Column(unique = true)
     var email: String? = null
