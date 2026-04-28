@@ -4,10 +4,14 @@ import com.paraustu.backend.dto.AuthResponse
 import com.paraustu.backend.dto.RegisterRequest
 import com.paraustu.backend.entity.User
 import com.paraustu.backend.repository.UserRepository
+import com.paraustu.backend.security.PasswordUtils
 import org.springframework.stereotype.Service
 
 @Service
-class AuthService(private val userRepository: UserRepository) {
+class AuthService(
+    private val userRepository: UserRepository,
+    private val passwordUtils: PasswordUtils
+) {
 
     fun register(request: RegisterRequest): AuthResponse {
         if (userRepository.existsByEmail(request.email)) {
@@ -21,7 +25,7 @@ class AuthService(private val userRepository: UserRepository) {
             this.fullName = request.fullName
             this.email = request.email
             this.phone = request.phone
-            this.passwordHash = request.pin
+            this.passwordHash = passwordUtils.hashPassword(request.pin)
         }
 
         val savedUser = userRepository.save(user)
@@ -36,7 +40,7 @@ class AuthService(private val userRepository: UserRepository) {
         val user = userRepository.findByEmail(request.email)
             ?: throw IllegalArgumentException("E-posta veya şifre hatalı.")
 
-        if (user.passwordHash != request.pin) {
+        if (!passwordUtils.checkPassword(request.pin, user.passwordHash ?: "")) {
             throw IllegalArgumentException("E-posta veya şifre hatalı.")
         }
 
