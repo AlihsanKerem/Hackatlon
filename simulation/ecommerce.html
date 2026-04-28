@@ -176,11 +176,10 @@
         }
 
         function buyNow(id) {
-            // Tek ürün için sepet temizle, ürünü ekle, ödeme sayfasına git
             const product = products.find(p => p.id === id);
             cart = [product];
             localStorage.setItem('cart', JSON.stringify(cart));
-            window.location.href = 'odeme.html';
+            window.location.href = 'sepet.html';
         }
 
         function goToCart() {

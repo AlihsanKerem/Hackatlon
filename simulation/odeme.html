@@ -365,17 +365,22 @@
                 return;
             }
 
-            // ParaÜstü iyzico arayüzüne yönlendir
+            // ParaÜstü güvenli ödeme arayüzüne yönlendir
             const total = cart.reduce((sum, item) => sum + item.price, 0);
-            const merchant = cart.length > 1
-                ? `${cart.length} ürün`
-                : cart[0].name;
+            
+            // Satıcı ismi olarak e-ticaret sitesinin adını gönderelim
+            const merchant = "KitapDünyası";
 
-            // ParaÜstü uygulamasındaki /pay sayfasına yönlendir
-            const callbackUrl = encodeURIComponent(window.location.href.split('/').slice(0, -1).join('/') + '/sonuc.html');
-            const url = `http://localhost:5173/pay?amount=${total}&merchant=${encodeURIComponent(merchant)}&callback=${callbackUrl}`;
+            // ParaÜstü uygulamasındaki /checkout sayfasına yönlendir
+            const url = `http://localhost:5173/checkout?amount=${total.toFixed(2)}&merchant=${encodeURIComponent(merchant)}`;
             window.location.href = url;
         }
+
+        // Sayfa açıldığında ParaÜstü'yü otomatik seç
+        window.onload = function() {
+            selectMethod('paraustu');
+            renderOrderSummary();
+        };
 
         function goBack() {
             window.location.href = 'sepet.html';

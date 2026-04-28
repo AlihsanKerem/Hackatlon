@@ -23,7 +23,8 @@ class AuthController(private val userRepository: UserRepository) {
         return mapOf(
             "token" to "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.test-token",
             "email" to user.email!!,
-            "id" to user.id.toString()
+            "id" to user.id.toString(),
+            "roundingPreference" to (user.roundingPreference ?: "NEAREST_10")
         )
     }
 }

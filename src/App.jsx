@@ -31,7 +31,7 @@ export default function App() {
               <Route path="/automation" element={<Automation />} />
               <Route path="/settings"   element={<Settings />} />
               <Route path="/pay"        element={<Payment />} />
-              <Route path="/checkout"    element={<Checkout />} />
+              <Route path="/checkout"   element={<Checkout />} />
             </Route>
             <Route path="/onboarding" element={<RoundingSplash />} />
           </Route>

@@ -29,35 +29,6 @@ function calcPortfolio(stocks) {
 
 // ── Components ──────────────────────────────────────────────
 
-function CardsSection({ cards }) {
-  return (
-    <div style={{ marginBottom: 20 }}>
-      <p style={{ fontSize: 14, fontWeight: 600, color: C.forest, marginBottom: 12 }}>Bağlı Kartlarım</p>
-      <div style={{ display: "flex", gap: 12, overflowX: "auto", paddingBottom: 8 }}>
-        {cards.map(card => (
-          <div key={card.id} style={{
-            minWidth: 200,
-            backgroundColor: card.isActive ? C.forest : "#fff",
-            color: card.isActive ? "#fff" : C.forest,
-            padding: "1rem",
-            borderRadius: 14,
-            border: `1px solid ${C.sage}`,
-            boxShadow: "0 2px 6px rgba(0,0,0,0.05)"
-          }}>
-            <p style={{ fontSize: 11, opacity: 0.7, margin: "0 0 4px" }}>{card.bankName}</p>
-            <p style={{ fontSize: 16, fontWeight: 700, margin: "0 0 12px", letterSpacing: 1 }}>{card.maskedNumber}</p>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-              <span style={{ fontSize: 10, backgroundColor: card.isActive ? C.green : C.sage, padding: "2px 8px", borderRadius: 4 }}>
-                {card.isActive ? "AKTİF" : "PASİF"}
-              </span>
-              {card.isActive && <span style={{ fontSize: 18 }}>💳</span>}
-            </div>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
 
 function KumbaramTab({ pool, transactions }) {
   return (
@@ -305,8 +276,6 @@ export default function Dashboard() {
           </p>
         </div>
 
-        {/* Cards Section */}
-        <CardsSection cards={data.cards} />
 
         {/* Tab Switcher */}
         <div style={{
