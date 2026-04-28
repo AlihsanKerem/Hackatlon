@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Navbar from "../components/Navbar";
+import { useAuth } from "../context/AuthContext";
 
 const C = {
   forest: "#012619",
@@ -9,24 +10,9 @@ const C = {
   cream:  "#E8E5DE",
 };
 
-// ── Mock Data ──────────────────────────────────────────────
-const MOCK_USER = { fullName: "Ayşe Kaya", roundupBalance: 847.60 };
+// MOCK_USER kaldırıldı, artık backend'den gerçek kullanıcı verisi çekilecek
 
-const MOCK_AUTOMATION = { active: true, threshold: 100, symbol: "THYAO.IS" };
-
-const MOCK_TRANSACTIONS = [
-  { id: 1, date: "26 Nis 2026", merchant: "Migros", amount: 47.20, roundup: 2.80 },
-  { id: 2, date: "25 Nis 2026", merchant: "Trendyol", amount: 189.90, roundup: 10.10 },
-  { id: 3, date: "25 Nis 2026", merchant: "Starbucks", amount: 83.50, roundup: 16.50 },
-  { id: 4, date: "24 Nis 2026", merchant: "Amazon", amount: 320.00, roundup: 30.00 },
-  { id: 5, date: "23 Nis 2026", merchant: "Getir", amount: 62.40, roundup: 7.60 },
-];
-
-const MOCK_PORTFOLIO = [
-  { symbol: "THYAO.IS", name: "Türk Hava Yolları", qty: 12, avgCost: 285.00, price: 318.40 },
-  { symbol: "BIMAS.IS", name: "BİM Birleşik Mağazalar", qty: 8,  avgCost: 412.50, price: 398.20 },
-  { symbol: "AKBNK.IS", name: "Akbank", qty: 30, avgCost: 52.80, price: 61.30 },
-];
+// Tüm MOCK verileri silindi, hepsi backend'den (DashboardData) gelecek
 
 // ── Helpers ────────────────────────────────────────────────
 const fmt = (n) =>
@@ -44,7 +30,8 @@ function calcPortfolio(stocks) {
 }
 
 // Kumbaram Tab
-function KumbaramTab() {
+function KumbaramTab({ data }) {
+  const { balance, automation, transactions } = data;
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
 
@@ -59,9 +46,9 @@ function KumbaramTab() {
           Biriken Para Üstü
         </p>
         <p style={{ color: "#fff", fontSize: 40, fontWeight: 700, margin: "0 0 4px", letterSpacing: "-0.02em" }}>
-          {fmt(MOCK_USER.roundupBalance)} ₺
+          {fmt(balance?.roundupBalance || 0)} ₺
         </p>
-        {MOCK_AUTOMATION.active && (
+        {automation?.active && (
           <div style={{
             display: "inline-flex", alignItems: "center", gap: 6,
             marginTop: 12,
@@ -72,7 +59,7 @@ function KumbaramTab() {
           }}>
             <div style={{ width: 6, height: 6, borderRadius: "50%", backgroundColor: C.green }} />
             <span style={{ color: C.green, fontSize: 12, fontWeight: 500 }}>
-              {MOCK_AUTOMATION.threshold} TL → {MOCK_AUTOMATION.symbol}
+              {automation.threshold} TL → {automation.symbol}
             </span>
           </div>
         )}
@@ -94,14 +81,18 @@ function KumbaramTab() {
           <span style={{ fontSize: 12, color: C.green, fontWeight: 500, cursor: "pointer" }}>Tümünü gör →</span>
         </div>
 
-        {MOCK_TRANSACTIONS.map((tx, i) => (
+        {transactions.length === 0 ? (
+          <div style={{ padding: "1.5rem", textAlign: "center", color: C.forest + "70", fontSize: 13 }}>
+            Henüz işleminiz bulunmamaktadır.
+          </div>
+        ) : transactions.map((tx, i) => (
           <div
             key={tx.id}
             style={{
               display: "flex",
               alignItems: "center",
               padding: "0.75rem 1rem",
-              borderBottom: i < MOCK_TRANSACTIONS.length - 1 ? `1px solid ${C.sage}40` : "none",
+              borderBottom: i < transactions.length - 1 ? `1px solid ${C.sage}40` : "none",
             }}
           >
             {/* Merchant icon */}
@@ -128,13 +119,36 @@ function KumbaramTab() {
         ))}
       </div>
 
+      {/* Test Backend Connection Button */}
+      <button
+        onClick={async () => {
+          try {
+            const res = await fetch('/api/islem/yuvarla?harcama=42.30&tip=5');
+            const data = await res.json();
+            alert("Backend'den başarıyla yanıt geldi!\nHarcanan: " + data.harcamaTutari + "\nBiriken Para Üstü: " + data.birikenPara);
+            console.log("Backend Yanıtı:", data);
+          } catch (error) {
+            alert("Backend bağlantı hatası! Lütfen konsolu kontrol edin.");
+            console.error("Fetch hatası:", error);
+          }
+        }}
+        style={{
+          padding: "10px", backgroundColor: C.forest, color: C.cream, 
+          border: "none", borderRadius: 8, cursor: "pointer", 
+          fontWeight: "bold", marginTop: 10
+        }}
+      >
+        Backend Bağlantısını Test Et (Örnek İstek)
+      </button>
+
     </div>
   );
 }
 
 // Hisselerim Tab
-function HisselerimTab() {
-  const { totalValue, pnl, pnlPct } = calcPortfolio(MOCK_PORTFOLIO);
+function HisselerimTab({ data }) {
+  const { portfolio } = data;
+  const { totalValue, pnl, pnlPct } = calcPortfolio(portfolio);
   const [buyModal, setBuyModal]   = useState(false);
   const [sellModal, setSellModal] = useState(null);
   const [buyForm, setBuyForm]     = useState({ symbol: "", qty: "", source: "roundup" });
@@ -204,7 +218,11 @@ function HisselerimTab() {
           </button>
         </div>
 
-        {MOCK_PORTFOLIO.map((s, i) => {
+        {portfolio.length === 0 ? (
+          <div style={{ padding: "1.5rem", textAlign: "center", color: C.forest + "70", fontSize: 13 }}>
+            Portföyünüz henüz boş. "Al" butonu ile hisse alabilirsiniz.
+          </div>
+        ) : portfolio.map((s, i) => {
           const pnl = (s.price - s.avgCost) * s.qty;
           const pct = ((s.price - s.avgCost) / s.avgCost) * 100;
           const pos = pnl >= 0;
@@ -212,7 +230,7 @@ function HisselerimTab() {
             <div key={s.symbol} style={{
               display: "flex", alignItems: "center",
               padding: "0.85rem 1rem",
-              borderBottom: i < MOCK_PORTFOLIO.length - 1 ? `1px solid ${C.sage}40` : "none",
+              borderBottom: i < portfolio.length - 1 ? `1px solid ${C.sage}40` : "none",
             }}>
               <div style={{
                 width: 38, height: 38, borderRadius: 10,
@@ -410,7 +428,29 @@ function HisselerimTab() {
 
 // ── Main Dashboard ─────────────────────────────────────────
 export default function Dashboard() {
+  const { token, logout } = useAuth();
   const [activeTab, setActiveTab] = useState("kumbaras");
+  const [dashboardData, setDashboardData] = useState(null);
+
+  useEffect(() => {
+    if (token) {
+      fetch('/api/dashboard', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      })
+      .then(res => {
+        if (!res.ok) { logout(); throw new Error("Oturum hatası"); }
+        return res.json();
+      })
+      .then(data => setDashboardData(data))
+      .catch(console.error);
+    }
+  }, [token, logout]);
+
+  if (!dashboardData) {
+    return <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', backgroundColor: C.cream, color: C.forest }}>Verileriniz yükleniyor...</div>;
+  }
+
+  const { user } = dashboardData;
 
   return (
     <div style={{ backgroundColor: C.cream, minHeight: "100vh" }}>
@@ -420,7 +460,7 @@ export default function Dashboard() {
         {/* Selamlama */}
         <div style={{ marginBottom: "1.25rem" }}>
           <h1 style={{ fontSize: 20, fontWeight: 700, color: C.forest, margin: "0 0 3px" }}>
-            Merhaba, {MOCK_USER.fullName.split(" ")[0]} 👋
+            Merhaba, {user.fullName ? user.fullName.split(" ")[0] : "İsimsiz"} 👋
           </h1>
           <p style={{ fontSize: 13, color: C.forest + "60", margin: 0 }}>
             {new Date().toLocaleDateString("tr-TR", { weekday: "long", day: "numeric", month: "long" })}
@@ -456,7 +496,7 @@ export default function Dashboard() {
           </button>
         </div>
 
-        {activeTab === "kumbaras" ? <KumbaramTab /> : <HisselerimTab />}
+        {activeTab === "kumbaras" ? <KumbaramTab data={dashboardData} /> : <HisselerimTab data={dashboardData} />}
       </main>
     </div>
   );

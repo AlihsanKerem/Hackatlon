@@ -1,5 +1,6 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 
 const C = {
   forest: "#012619",
@@ -9,8 +10,32 @@ const C = {
   cream:  "#E8E5DE",
 };
 
+const getInitials = (name) => {
+  if (!name) return "??";
+  const words = name.trim().split(" ");
+  if (words.length === 1) return words[0].slice(0, 2).toUpperCase();
+  return (words[0][0] + words[words.length - 1][0]).toUpperCase();
+};
+
 export default function Navbar({ title, showBack = false }) {
   const navigate = useNavigate();
+  const { token } = useAuth();
+  const [initials, setInitials] = useState("??");
+
+  useEffect(() => {
+    if (token) {
+      fetch('/api/auth/me', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data && data.fullName) {
+          setInitials(getInitials(data.fullName));
+        }
+      })
+      .catch(console.error);
+    }
+  }, [token]);
 
   return (
     <nav style={{
@@ -53,7 +78,7 @@ export default function Navbar({ title, showBack = false }) {
           display: "flex", alignItems: "center", justifyContent: "center",
           fontSize: 11, fontWeight: 600, color: C.green,
         }}>
-          AK
+          {initials}
         </div>
       </div>
     </nav>
