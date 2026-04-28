@@ -264,6 +264,7 @@ export default function Automation() {
   const [selectedStock, setSelectedStock] = useState(null);
   const [toast, setToast] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [loadingSymbol, setLoadingSymbol] = useState(null);
 
   useEffect(() => {
     if (token) {
