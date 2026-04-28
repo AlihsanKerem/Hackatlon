@@ -19,5 +19,6 @@ class User {
     var passwordHash: String? = null
     
     @Column(unique = true)
+    @Convert(converter = com.paraustu.backend.security.CryptoConverter::class)
     var phone: String? = null
 }

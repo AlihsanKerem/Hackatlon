@@ -10,9 +10,8 @@ group = "com.paraustu"
 version = "0.0.1-SNAPSHOT"
 
 java {
-	toolchain {
-		languageVersion = JavaLanguageVersion.of(17)
-	}
+    sourceCompatibility = JavaVersion.VERSION_21
+    targetCompatibility = JavaVersion.VERSION_21
 }
 
 repositories {
@@ -27,6 +26,12 @@ dependencies {
     
     // POSTGRESQL SÜRÜCÜSÜ (SQLite yerine bunu ekledik)
     runtimeOnly("org.postgresql:postgresql")
+
+    // Yahoo Finance API (Hisse verilerini çekmek için)
+    implementation("com.yahoofinance-api:YahooFinanceAPI:3.17.0")
+
+    // Security Crypto (BCrypt ve Şifreleme işlemleri için)
+    implementation("org.springframework.security:spring-security-crypto")
 
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit5")
