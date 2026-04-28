@@ -15,8 +15,15 @@ class ProxyCard {
     var userId: UUID? = null // users tablosundaki id
     
     var bankName: String? = null
+    
+    @Convert(converter = com.paraustu.backend.security.CryptoConverter::class)
     var cardNumber: String? = null
+    
+    @Convert(converter = com.paraustu.backend.security.CryptoConverter::class)
     var cardDate: String? = null
+    
+    @Convert(converter = com.paraustu.backend.security.CryptoConverter::class)
     var cardCvv: String? = null
+    
     var isActive: Boolean = true
 }
