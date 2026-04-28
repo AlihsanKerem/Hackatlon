@@ -259,10 +259,35 @@ export default function Automation() {
   const [activeRule, setActiveRule] = useState(MOCK_ACTIVE_RULE);
   const [selectedStock, setSelectedStock] = useState(null);
   const [toast, setToast] = useState(null);
+  const [loadingSymbol, setLoadingSymbol] = useState(null);
 
   const showToast = (msg) => {
     setToast(msg);
     setTimeout(() => setToast(null), 2500);
+  };
+
+  const handleSelectStock = async (stock) => {
+    setLoadingSymbol(stock.symbol);
+    try {
+      const response = await fetch(`http://localhost:8080/api/stocks/${stock.symbol}`);
+      if (response.ok) {
+        const realData = await response.json();
+        setSelectedStock({
+          ...stock,
+          price: realData.price || stock.price,
+          name: realData.name || stock.name,
+        });
+      } else {
+        setSelectedStock(stock);
+        showToast("Canlı fiyat alınamadı, eski veri gösteriliyor.");
+      }
+    } catch (e) {
+      console.error(e);
+      setSelectedStock(stock);
+      showToast("Sunucuya bağlanılamadı, eski veri gösteriliyor.");
+    } finally {
+      setLoadingSymbol(null);
+    }
   };
 
   const filtered = useMemo(() => {
@@ -350,14 +375,15 @@ export default function Automation() {
                 return (
                   <div
                     key={stock.symbol}
-                    onClick={() => setSelectedStock(stock)}
+                    onClick={() => handleSelectStock(stock)}
                     style={{
                       display: "flex", alignItems: "center",
                       padding: "0.75rem 1rem",
                       borderBottom: i < filtered.length - 1 ? `1px solid ${C.sage}40` : "none",
                       backgroundColor: isActive ? C.green + "06" : "transparent",
-                      cursor: "pointer",
-                      transition: "background-color 0.15s",
+                      cursor: loadingSymbol === stock.symbol ? "wait" : "pointer",
+                      opacity: loadingSymbol === stock.symbol ? 0.6 : 1,
+                      transition: "all 0.15s",
                     }}
                   >
                     <div style={{
