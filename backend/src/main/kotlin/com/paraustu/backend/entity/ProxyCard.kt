@@ -1,4 +1,4 @@
-package com.paraustu.entity
+package com.paraustu.backend.entity
 
 import jakarta.persistence.*
 import java.math.BigDecimal
