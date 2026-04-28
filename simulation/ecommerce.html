@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KitapDünyası - E-Ticaret Simülasyonu</title>
+    <style>
+        :root {
+            --forest: #012619;
+            --green: #4EA664;
+            --cream: #E8E5DE;
+            --sage: #A9D9C2;
+        }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f4f4;
+        }
+        header {
+            background-color: var(--forest);
+            color: white;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+        .cart-icon {
+            position: relative;
+            cursor: pointer;
+            font-size: 1.2rem;
+            padding: 8px 16px;
+            background-color: rgba(255,255,255,0.1);
+            border-radius: 8px;
+            transition: background 0.2s;
+        }
+        .cart-icon:hover {
+            background-color: rgba(255,255,255,0.2);
+        }
+        .cart-badge {
+            position: absolute;
+            top: -4px;
+            right: -4px;
+            background-color: var(--green);
+            color: white;
+            font-size: 0.7rem;
+            font-weight: 700;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .container {
+            max-width: 1000px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+        .products {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 1.5rem;
+        }
+        .product-card {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            text-align: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            border: 1px solid var(--sage);
+        }
+        .product-emoji {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+        .product-name {
+            font-weight: 600;
+            color: var(--forest);
+            margin-bottom: 0.5rem;
+        }
+        .product-price {
+            font-size: 1.2rem;
+            color: var(--green);
+            font-weight: 700;
+            margin-bottom: 1rem;
+        }
+        .btn-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .btn-cart {
+            background-color: var(--forest);
+            color: white;
+            border: none;
+            padding: 0.75rem 1rem;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            transition: opacity 0.2s;
+        }
+        .btn-cart:hover {
+            opacity: 0.85;
+        }
+        .btn-buy {
+            background-color: var(--green);
+            color: white;
+            border: none;
+            padding: 0.75rem 1rem;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            transition: opacity 0.2s;
+        }
+        .btn-buy:hover {
+            opacity: 0.9;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="logo">KitapDünyası</div>
+        <div class="cart-icon" onclick="goToCart()">
+            🛒 Sepet
+            <span id="cart-badge" class="cart-badge" style="display: none;">0</span>
+        </div>
+    </header>
+
+    <div class="container">
+        <h2 style="color: var(--forest); margin-bottom: 1.5rem;">Günün Fırsatları</h2>
+        <div class="products" id="product-list"></div>
+    </div>
+
+    <script>
+        const products = [
+            { id: 1, name: "Python ile Programlama", price: 149.90, image: "📚" },
+            { id: 2, name: "Bluetooth Kulaklık", price: 299.00, image: "🎧" },
+            { id: 3, name: "Organik Kahve 500g", price: 87.50, image: "☕" },
+            { id: 4, name: "Yoga Matı", price: 210.00, image: "🧘" },
+            { id: 5, name: "Mekanik Klavye", price: 1249.00, image: "⌨️" },
+            { id: 6, name: "Günlük Defter", price: 34.90, image: "📓" },
+        ];
+
+        // Sepet localStorage'da tutulacak
+        let cart = JSON.parse(localStorage.getItem('cart')) || [];
+
+        function updateCartBadge() {
+            const badge = document.getElementById('cart-badge');
+            if (cart.length > 0) {
+                badge.style.display = 'flex';
+                badge.textContent = cart.length;
+            } else {
+                badge.style.display = 'none';
+            }
+        }
+
+        function addToCart(id) {
+            const product = products.find(p => p.id === id);
+            cart.push(product);
+            localStorage.setItem('cart', JSON.stringify(cart));
+            updateCartBadge();
+            alert(`${product.name} sepete eklendi!`);
+        }
+
+        function buyNow(id) {
+            // Tek ürün için sepet temizle, ürünü ekle, ödeme sayfasına git
+            const product = products.find(p => p.id === id);
+            cart = [product];
+            localStorage.setItem('cart', JSON.stringify(cart));
+            window.location.href = 'odeme.html';
+        }
+
+        function goToCart() {
+            if (cart.length === 0) {
+                alert('Sepetiniz boş!');
+                return;
+            }
+            window.location.href = 'sepet.html';
+        }
+
+        // Ürünleri listele
+        const list = document.getElementById('product-list');
+        products.forEach(p => {
+            const card = document.createElement('div');
+            card.className = 'product-card';
+            card.innerHTML = `
+                <div class="product-emoji">${p.image}</div>
+                <div class="product-name">${p.name}</div>
+                <div class="product-price">${p.price.toFixed(2).replace('.', ',')} ₺</div>
+                <div class="btn-group">
+                    <button class="btn-cart" onclick="addToCart(${p.id})">Sepete Ekle</button>
+                    <button class="btn-buy" onclick="buyNow(${p.id})">Hemen Al</button>
+                </div>
+            `;
+            list.appendChild(card);
+        });
+
+        // Sayfa yüklendiğinde badge'i güncelle
+        updateCartBadge();
+    </script>
+</body>
+</html>

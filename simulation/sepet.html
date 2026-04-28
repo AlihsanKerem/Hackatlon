@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sepetim - KitapDünyası</title>
+    <style>
+        :root {
+            --forest: #012619;
+            --green: #4EA664;
+            --cream: #E8E5DE;
+            --sage: #A9D9C2;
+        }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f4f4;
+        }
+        header {
+            background-color: var(--forest);
+            color: white;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            cursor: pointer;
+        }
+        .container {
+            max-width: 800px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+        .page-title {
+            color: var(--forest);
+            font-size: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+        .cart-item {
+            background: white;
+            border-radius: 12px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            border: 1px solid var(--sage);
+        }
+        .item-image {
+            font-size: 2.5rem;
+        }
+        .item-info {
+            flex: 1;
+        }
+        .item-name {
+            font-weight: 600;
+            color: var(--forest);
+            margin-bottom: 4px;
+        }
+        .item-price {
+            color: var(--green);
+            font-weight: 700;
+        }
+        .item-remove {
+            background: none;
+            border: none;
+            color: #dc2626;
+            font-size: 1.2rem;
+            cursor: pointer;
+            padding: 8px;
+        }
+        .summary {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-top: 1.5rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            border: 1px solid var(--sage);
+        }
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.75rem;
+            color: #333;
+        }
+        .summary-row.total {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--forest);
+            border-top: 1px solid #eee;
+            padding-top: 0.75rem;
+            margin-top: 0.75rem;
+        }
+        .btn-checkout {
+            width: 100%;
+            padding: 1rem;
+            background-color: var(--green);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            margin-top: 1rem;
+            transition: opacity 0.2s;
+        }
+        .btn-checkout:hover {
+            opacity: 0.9;
+        }
+        .empty-cart {
+            text-align: center;
+            padding: 3rem;
+            color: #666;
+        }
+        .empty-cart-icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+        }
+        .btn-continue {
+            background-color: var(--forest);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="logo" onclick="goHome()">KitapDünyası</div>
+        <div style="font-size: 1.2rem;">🛒 Sepetim</div>
+    </header>
+
+    <div class="container">
+        <h1 class="page-title">Sepetim</h1>
+        <div id="cart-items"></div>
+        <div id="cart-summary"></div>
+    </div>
+
+    <script>
+        let cart = JSON.parse(localStorage.getItem('cart')) || [];
+
+        function renderCart() {
+            const itemsContainer = document.getElementById('cart-items');
+            const summaryContainer = document.getElementById('cart-summary');
+
+            if (cart.length === 0) {
+                itemsContainer.innerHTML = `
+                    <div class="empty-cart">
+                        <div class="empty-cart-icon">🛒</div>
+                        <p>Sepetiniz boş</p>
+                        <button class="btn-continue" onclick="goHome()">Alışverişe Devam Et</button>
+                    </div>
+                `;
+                summaryContainer.innerHTML = '';
+                return;
+            }
+
+            let itemsHtml = '';
+            cart.forEach((item, index) => {
+                itemsHtml += `
+                    <div class="cart-item">
+                        <div class="item-image">${item.image}</div>
+                        <div class="item-info">
+                            <div class="item-name">${item.name}</div>
+                            <div class="item-price">${item.price.toFixed(2).replace('.', ',')} ₺</div>
+                        </div>
+                        <button class="item-remove" onclick="removeItem(${index})">✕</button>
+                    </div>
+                `;
+            });
+            itemsContainer.innerHTML = itemsHtml;
+
+            const total = cart.reduce((sum, item) => sum + item.price, 0);
+            const itemCount = cart.length;
+
+            summaryContainer.innerHTML = `
+                <div class="summary">
+                    <div class="summary-row">
+                        <span>Ürün Sayısı</span>
+                        <span>${itemCount} adet</span>
+                    </div>
+                    <div class="summary-row">
+                        <span>Ara Toplam</span>
+                        <span>${total.toFixed(2).replace('.', ',')} ₺</span>
+                    </div>
+                    <div class="summary-row total">
+                        <span>Toplam</span>
+                        <span>${total.toFixed(2).replace('.', ',')} ₺</span>
+                    </div>
+                    <button class="btn-checkout" onclick="goToCheckout()">Ödemeye Geç</button>
+                </div>
+            `;
+        }
+
+        function removeItem(index) {
+            cart.splice(index, 1);
+            localStorage.setItem('cart', JSON.stringify(cart));
+            renderCart();
+        }
+
+        function goHome() {
+            window.location.href = 'ecommerce.html';
+        }
+
+        function goToCheckout() {
+            window.location.href = 'odeme.html';
+        }
+
+        renderCart();
+    </script>
+</body>
+</html>

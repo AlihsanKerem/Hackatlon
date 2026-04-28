@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ödeme - KitapDünyası</title>
+    <style>
+        :root {
+            --forest: #012619;
+            --green: #4EA664;
+            --mint: #78BF9E;
+            --sage: #A9D9C2;
+            --cream: #E8E5DE;
+        }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f4f4;
+        }
+        header {
+            background-color: var(--forest);
+            color: white;
+            padding: 1rem 2rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        .back-btn {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.2rem;
+            cursor: pointer;
+        }
+        .container {
+            max-width: 600px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+        .page-title {
+            color: var(--forest);
+            font-size: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+        .order-summary {
+            background: white;
+            border-radius: 12px;
+            padding: 1.25rem;
+            margin-bottom: 1.5rem;
+            border: 1px solid var(--sage);
+        }
+        .order-title {
+            font-weight: 600;
+            color: var(--forest);
+            margin-bottom: 1rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 1px solid #eee;
+        }
+        .order-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+            font-size: 0.95rem;
+            color: #555;
+        }
+        .order-total {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 1rem;
+            padding-top: 0.75rem;
+            border-top: 1px solid #eee;
+            font-weight: 700;
+            font-size: 1.1rem;
+            color: var(--forest);
+        }
+        .payment-methods {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            border: 1px solid var(--sage);
+        }
+        .method-title {
+            font-weight: 600;
+            color: var(--forest);
+            padding: 1.25rem;
+            border-bottom: 1px solid #eee;
+        }
+        .method-option {
+            padding: 1.25rem;
+            border-bottom: 1px solid #eee;
+            cursor: pointer;
+            transition: background 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .method-option:last-child {
+            border-bottom: none;
+        }
+        .method-option:hover {
+            background-color: #f8f9fa;
+        }
+        .method-option.selected {
+            background-color: var(--cream);
+        }
+        .method-radio {
+            width: 20px;
+            height: 20px;
+            border: 2px solid var(--sage);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .method-radio.selected {
+            border-color: var(--green);
+            background-color: var(--green);
+        }
+        .method-radio.selected::after {
+            content: '';
+            width: 8px;
+            height: 8px;
+            background: white;
+            border-radius: 50%;
+        }
+        .method-info {
+            flex: 1;
+        }
+        .method-name {
+            font-weight: 600;
+            color: var(--forest);
+            margin-bottom: 2px;
+        }
+        .method-desc {
+            font-size: 0.85rem;
+            color: #888;
+        }
+        .method-icon {
+            font-size: 1.5rem;
+        }
+        /* ParaÜstü ödeme seçili olduğunda */
+        .paraustu-info {
+            display: none;
+            padding: 1rem 1.25rem;
+            background-color: var(--cream);
+            border-bottom: 1px solid var(--sage);
+        }
+        .paraustu-info.show {
+            display: block;
+        }
+        .paraustu-info p {
+            font-size: 0.9rem;
+            color: #666;
+            line-height: 1.5;
+        }
+        .paraustu-info strong {
+            color: var(--forest);
+        }
+        /* Klasik kart formu */
+        .card-form {
+            display: none;
+            padding: 1.25rem;
+        }
+        .card-form.show {
+            display: block;
+        }
+        .form-group {
+            margin-bottom: 1rem;
+        }
+        .form-label {
+            display: block;
+            font-size: 0.85rem;
+            color: #666;
+            margin-bottom: 4px;
+        }
+        .form-input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid var(--sage);
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.2s;
+        }
+        .form-input:focus {
+            outline: none;
+            border-color: var(--green);
+        }
+        .form-row {
+            display: flex;
+            gap: 1rem;
+        }
+        .form-row .form-group {
+            flex: 1;
+        }
+        .btn-pay {
+            width: 100%;
+            padding: 1rem;
+            background-color: var(--green);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            margin-top: 1rem;
+            transition: opacity 0.2s;
+        }
+        .btn-pay:hover {
+            opacity: 0.9;
+        }
+        .btn-pay.paraustu {
+            background-color: var(--forest);
+        }
+        .btn-pay:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        .disabled-method {
+            opacity: 0.5;
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <button class="back-btn" onclick="goBack()">←</button>
+        <div style="font-size: 1.2rem; font-weight: 600;">Ödeme</div>
+    </header>
+
+    <div class="container">
+        <h1 class="page-title">Sipariş Özeti</h1>
+
+        <!-- Sipariş özeti -->
+        <div class="order-summary" id="order-summary">
+            <div class="order-title">Sipariş Detayları</div>
+            <div id="order-items"></div>
+            <div class="order-total">
+                <span>Toplam</span>
+                <span id="total-amount">0,00 ₺</span>
+            </div>
+        </div>
+
+        <!-- Ödeme yöntemleri -->
+        <div class="payment-methods">
+            <div class="method-title">Ödeme Yöntemi Seçin</div>
+
+            <!-- Klasik Kart (Pasif - gösterim amaçlı) -->
+            <div class="method-option disabled-method" onclick="selectMethod('card')">
+                <div class="method-radio" id="radio-card"></div>
+                <div class="method-icon">💳</div>
+                <div class="method-info">
+                    <div class="method-name">Kredi/Banka Kartı</div>
+                    <div class="method-desc">Visa, Mastercard, American Express</div>
+                </div>
+            </div>
+
+            <!-- Klasik kart formu -->
+            <div class="card-form" id="card-form">
+                <div class="form-group">
+                    <label class="form-label">Kart Numarası</label>
+                    <input type="text" class="form-input" placeholder="0000 0000 0000 0000" maxlength="19">
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Son Kullanma</label>
+                        <input type="text" class="form-input" placeholder="AA/YY" maxlength="5">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">CVV</label>
+                        <input type="text" class="form-input" placeholder="000" maxlength="3">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Kart Sahibi</label>
+                    <input type="text" class="form-input" placeholder="Ad Soyad">
+                </div>
+                <p style="font-size: 0.8rem; color: #888; margin-top: 0.5rem;">
+                    Bu ödeme yöntemi şu an simülasyon amaçlıdır.
+                </p>
+            </div>
+
+            <!-- ParaÜstü ile Öde -->
+            <div class="method-option" onclick="selectMethod('paraustu')">
+                <div class="method-radio" id="radio-paraustu"></div>
+                <div class="method-icon">✨</div>
+                <div class="method-info">
+                    <div class="method-name">ParaÜstü ile Öde</div>
+                    <div class="method-desc">Sanal kartınızla hızlı ve güvenli ödeme</div>
+                </div>
+            </div>
+
+            <!-- ParaÜstü bilgilendirme -->
+            <div class="paraustu-info" id="paraustu-info">
+                <p>
+                    <strong>ParaÜstü</strong> ile ödemede, uygulamadaki sanal kartınız kullanılarak
+                    güvenli ödeme yapılır. Kart bilgileriniz kaydedilmez.
+                </p>
+            </div>
+        </div>
+
+        <!-- Ödeme butonu -->
+        <button class="btn-pay" id="btn-pay" onclick="processPayment()" disabled>
+            Ödemeyi Tamamla
+        </button>
+    </div>
+
+    <script>
+        let cart = JSON.parse(localStorage.getItem('cart')) || [];
+        let selectedMethod = null;
+
+        function renderOrderSummary() {
+            const itemsContainer = document.getElementById('order-items');
+            const totalElement = document.getElementById('total-amount');
+
+            if (cart.length === 0) {
+                window.location.href = 'ecommerce.html';
+                return;
+            }
+
+            let itemsHtml = '';
+            let total = 0;
+
+            cart.forEach(item => {
+                total += item.price;
+                itemsHtml += `
+                    <div class="order-item">
+                        <span>${item.name}</span>
+                        <span>${item.price.toFixed(2).replace('.', ',')} ₺</span>
+                    </div>
+                `;
+            });
+
+            itemsContainer.innerHTML = itemsHtml;
+            totalElement.textContent = total.toFixed(2).replace('.', ',') + ' ₺';
+        }
+
+        function selectMethod(method) {
+            // Sadece paraustu aktif
+            if (method !== 'paraustu') return;
+
+            selectedMethod = method;
+
+            // Radio button güncelle
+            document.getElementById('radio-card').classList.remove('selected');
+            document.getElementById('radio-paraustu').classList.add('selected');
+
+            // Formları göster/gizle
+            document.getElementById('card-form').classList.remove('show');
+            document.getElementById('paraustu-info').classList.add('show');
+
+            // Butonu güncelle
+            const btn = document.getElementById('btn-pay');
+            btn.disabled = false;
+            btn.textContent = 'ParaÜstü ile Ödemeye Geç';
+            btn.classList.add('paraustu');
+        }
+
+        function processPayment() {
+            if (selectedMethod !== 'paraustu') {
+                alert('Lütfen bir ödeme yöntemi seçin.');
+                return;
+            }
+
+            // ParaÜstü iyzico arayüzüne yönlendir
+            const total = cart.reduce((sum, item) => sum + item.price, 0);
+            const merchant = cart.length > 1
+                ? `${cart.length} ürün`
+                : cart[0].name;
+
+            // ParaÜstü uygulamasındaki /pay sayfasına yönlendir
+            const callbackUrl = encodeURIComponent(window.location.href.split('/').slice(0, -1).join('/') + '/sonuc.html');
+            const url = `http://localhost:5173/pay?amount=${total}&merchant=${encodeURIComponent(merchant)}&callback=${callbackUrl}`;
+            window.location.href = url;
+        }
+
+        function goBack() {
+            window.location.href = 'sepet.html';
+        }
+
+        renderOrderSummary();
+    </script>
+</body>
+</html>

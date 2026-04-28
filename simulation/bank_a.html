@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>A Bankası - İnternet Bankacılığı</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background-color: #f0f2f5;
+            min-height: 100vh;
+        }
+        header {
+            background-color: #003087;
+            color: #FFD700;
+            padding: 1rem 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+        }
+        .logo {
+            font-size: 1.3rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .container {
+            max-width: 480px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+        .card {
+            background: white;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+        }
+        .card-header {
+            background: linear-gradient(135deg, #003087, #0047AB);
+            color: white;
+            padding: 1.5rem;
+        }
+        .card-header h2 {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+        .card-header .account {
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+        .balance-section {
+            padding: 2rem 1.5rem;
+            text-align: center;
+            border-bottom: 1px solid #eee;
+        }
+        .balance-label {
+            font-size: 0.85rem;
+            color: #666;
+            margin-bottom: 0.5rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        .balance-amount {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #003087;
+        }
+        .balance-currency {
+            font-size: 1.2rem;
+            color: #003087;
+        }
+        .actions {
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .action-btn {
+            background: #f8f9fa;
+            border: none;
+            padding: 1rem;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .action-btn:hover {
+            background: #e9ecef;
+        }
+        .action-icon {
+            font-size: 1.5rem;
+        }
+        .action-text {
+            flex: 1;
+            text-align: left;
+        }
+        .action-text h4 {
+            color: #333;
+            font-size: 0.95rem;
+            margin-bottom: 2px;
+        }
+        .action-text p {
+            color: #888;
+            font-size: 0.8rem;
+        }
+        .info-box {
+            background: #fff3cd;
+            border: 1px solid #ffc107;
+            border-radius: 12px;
+            padding: 1rem;
+            margin: 1.5rem;
+            font-size: 0.85rem;
+            color: #856404;
+        }
+        .info-box strong {
+            display: block;
+            margin-bottom: 4px;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="logo">🏦 A Bankası</div>
+        <div style="font-size: 0.9rem;">İnternet Şubesi</div>
+    </header>
+
+    <div class="container">
+        <div class="card">
+            <div class="card-header">
+                <h2>Merhaba, Ahmet Yılmaz</h2>
+                <div class="account">**** 4242</div>
+            </div>
+
+            <div class="balance-section">
+                <div class="balance-label">Güncel Kullanılabilir Bakiye</div>
+                <div class="balance-amount">4.280,00 <span class="balance-currency">₺</span></div>
+            </div>
+
+            <div class="actions">
+                <button class="action-btn">
+                    <span class="action-icon">💳</span>
+                    <div class="action-text">
+                        <h4>Kartlarım</h4>
+                        <p>Kart görüntüle ve yönet</p>
+                    </div>
+                </button>
+                <button class="action-btn">
+                    <span class="action-icon">📊</span>
+                    <div class="action-text">
+                        <h4>Hesap Özeti</h4>
+                        <p>Son işlemleriniz</p>
+                    </div>
+                </button>
+                <button class="action-btn">
+                    <span class="action-icon">🔄</span>
+                    <div class="action-text">
+                        <h4>Para Transferleri</h4>
+                        <p>Havale ve EFT işlemleri</p>
+                    </div>
+                </button>
+            </div>
+        </div>
+
+        <div class="info-box">
+            <strong>ℹ️ Bilgilendirme</strong>
+            Bu sayfa ParaÜstü uygulaması ile yapılan ödemeleri göstermek amacıyla tasarlanmıştır. Gerçek bir banka uygulaması değildir.
+        </div>
+    </div>
+</body>
+</html>

@@ -2,11 +2,11 @@
 import { useState } from "react";
 import { useNavigate, Navigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import axiosInstance from "../api/axiosInstance";
 
-const mockLogin = async (email, password) => {
-  await new Promise(r => setTimeout(r, 900));
-  if (email === "hata@test.com") throw new Error("E-posta veya şifre hatalı.");
-  return { token: "mock-jwt-token-xyz" };
+const realLogin = async (email, password) => {
+  const res = await axiosInstance.post("/auth/login", { email, password });
+  return res.data;
 };
 
 const C = { forest:"#012619", green:"#4EA664", mint:"#78BF9E", sage:"#A9D9C2", cream:"#E8E5DE" };
@@ -35,7 +35,8 @@ export default function Login() {
     if (!email || !password) { setError("Lütfen tüm alanları doldurun."); return; }
     setLoading(true);
     try {
-      const res = await mockLogin(email, password);
+      const res = await realLogin(email, password);
+      localStorage.setItem("userId", res.id);
       login(res.token);
       navigate("/dashboard", { replace: true });
     } catch (err) {

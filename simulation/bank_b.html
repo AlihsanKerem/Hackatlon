@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>B Bankası - Mobil Şube</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background-color: #fff;
+            min-height: 100vh;
+        }
+        header {
+            background-color: #C8102E;
+            color: white;
+            padding: 1rem 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            box-shadow: 0 2px 8px rgba(200, 16, 46, 0.3);
+        }
+        .logo {
+            font-size: 1.5rem;
+        }
+        .logo-text {
+            font-weight: 700;
+            font-size: 1.2rem;
+        }
+        .container {
+            padding: 1.5rem;
+        }
+        .card {
+            background: linear-gradient(135deg, #C8102E, #8b0a1d);
+            color: white;
+            border-radius: 20px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 8px 24px rgba(200, 16, 46, 0.25);
+        }
+        .card-label {
+            font-size: 0.75rem;
+            opacity: 0.8;
+            margin-bottom: 0.5rem;
+            letter-spacing: 0.1em;
+        }
+        .card-balance {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+        }
+        .card-number {
+            font-family: 'Courier New', monospace;
+            font-size: 1.1rem;
+            letter-spacing: 3px;
+            opacity: 0.9;
+        }
+        .menu {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .menu-item {
+            background: #f8f9fa;
+            border: none;
+            padding: 1rem;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+            width: 100%;
+            text-align: left;
+        }
+        .menu-item:hover {
+            background: #e9ecef;
+        }
+        .menu-icon {
+            font-size: 1.3rem;
+        }
+        .menu-text {
+            color: #333;
+            font-size: 0.95rem;
+            font-weight: 500;
+        }
+        .info-box {
+            background: #fff3cd;
+            border: 1px solid #ffc107;
+            border-radius: 12px;
+            padding: 1rem;
+            margin-top: 1.5rem;
+            font-size: 0.85rem;
+            color: #856404;
+        }
+        .info-box strong {
+            display: block;
+            margin-bottom: 4px;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="logo">🏦</div>
+        <div class="logo-text">B Bankası</div>
+    </header>
+
+    <div class="container">
+        <div class="card">
+            <div class="card-label">TOPLAM VARLIKLARIM</div>
+            <div class="card-balance">12.450,00 ₺</div>
+            <div class="card-number">**** 5353</div>
+        </div>
+
+        <div class="menu">
+            <button class="menu-item">
+                <span class="menu-icon">💳</span>
+                <span class="menu-text">Kartlarım</span>
+            </button>
+            <button class="menu-item">
+                <span class="menu-icon">📜</span>
+                <span class="menu-text">Hesap Hareketleri</span>
+            </button>
+            <button class="menu-item">
+                <span class="menu-icon">💸</span>
+                <span class="menu-text">Para Gönder</span>
+            </button>
+            <button class="menu-item">
+                <span class="menu-icon">⚙️</span>
+                <span class="menu-text">Ayarlar</span>
+            </button>
+        </div>
+
+        <div class="info-box">
+            <strong>ℹ️ Bilgilendirme</strong>
+            Bu sayfa ParaÜstü uygulaması ile yapılan ödemeleri göstermek amacıyla tasarlanmıştır. Gerçek bir banka uygulaması değildir.
+        </div>
+    </div>
+</body>
+</html>
