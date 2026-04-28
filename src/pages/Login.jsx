@@ -3,11 +3,7 @@ import { useState } from "react";
 import { useNavigate, Navigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 
-const mockLogin = async (email, password) => {
-  await new Promise(r => setTimeout(r, 900));
-  if (email === "hata@test.com") throw new Error("E-posta veya şifre hatalı.");
-  return { token: "mock-jwt-token-xyz" };
-};
+// mockLogin kaldırıldı, API kullanılacak
 
 const C = { forest:"#012619", green:"#4EA664", mint:"#78BF9E", sage:"#A9D9C2", cream:"#E8E5DE" };
 
@@ -35,8 +31,18 @@ export default function Login() {
     if (!email || !password) { setError("Lütfen tüm alanları doldurun."); return; }
     setLoading(true);
     try {
-      const res = await mockLogin(email, password);
-      login(res.token);
+      const res = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, pin: password })
+      });
+      
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.error || "Giriş başarısız oldu.");
+      }
+      
+      login(data.token);
       navigate("/dashboard", { replace: true });
     } catch (err) {
       setError(err.message);
@@ -121,7 +127,7 @@ export default function Login() {
           backgroundColor:C.mint+"25", border:`1px dashed ${C.mint}`,
           fontSize:12, color:C.forest+"70", textAlign:"center", lineHeight:1.6,
         }}>
-          Mock mod · Herhangi e-posta / şifre → giriş · Hata testi: hata@test.com
+          Giriş işlemi gerçek veritabanına (PostgreSQL) bağlanmıştır.
         </div>
       </div>
     </div>

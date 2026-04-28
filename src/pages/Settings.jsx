@@ -11,7 +11,7 @@ const C = {
   cream:  "#E8E5DE",
 };
 
-const MOCK_USER = { fullName: "Ayşe Kaya", email: "ayse@example.com", phone: "+90 532 123 45 67" };
+// MOCK_USER silindi, veriler backend'den gelecek
 
 const MOCK_ROUNDING = {
   under10:    "5",
@@ -20,13 +20,20 @@ const MOCK_ROUNDING = {
   under10000: "100",
 };
 
-const MOCK_RULE = { symbol: "THYAO.IS", threshold: 100, isActive: true };
+// MOCK_RULE silindi, veriler backend'den gelecek
 
 const ROUNDING_LABELS = {
   under10:    "10 TL altı",
   under100:   "10–100 TL",
   under1000:  "100–1.000 TL",
   under10000: "1.000 TL+",
+};
+
+const getInitials = (name) => {
+  if (!name) return "??";
+  const words = name.trim().split(" ");
+  if (words.length === 1) return words[0].slice(0, 2).toUpperCase();
+  return (words[0][0] + words[words.length - 1][0]).toUpperCase();
 };
 
 const TIERS = [
@@ -368,9 +375,9 @@ function PinModal({ onClose }) {
 
 export default function Settings() {
   const navigate = useNavigate();
-  const { logout } = useAuth();
+  const { token, logout } = useAuth();
   const [roundingPrefs, setRoundingPrefs] = useState(MOCK_ROUNDING);
-  const [rule] = useState(MOCK_RULE);
+  const [dashboardData, setDashboardData] = useState(null);
   const [showRounding, setShowRounding] = useState(false);
   const [showPin, setShowPin] = useState(false);
   const [showLogout, setShowLogout] = useState(false);
@@ -388,6 +395,50 @@ export default function Settings() {
     logout();
     navigate("/login", { replace: true });
   };
+
+  const handleSeed = async () => {
+    if (!token) return;
+    try {
+      const res = await fetch('/api/test/seed', {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (res.ok) {
+        showToast("Demo veriler eklendi!");
+        // Refresh data
+        fetchDashboardData();
+      } else {
+        showToast("Demo veriler eklenirken hata oluştu.");
+      }
+    } catch (err) {
+      showToast("Bağlantı hatası");
+    }
+  };
+
+  const fetchDashboardData = () => {
+    if (token) {
+      fetch('/api/dashboard', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      })
+      .then(res => {
+        if (!res.ok) { logout(); throw new Error("Oturum hatası"); }
+        return res.json();
+      })
+      .then(data => setDashboardData(data))
+      .catch(console.error);
+    }
+  };
+
+  useEffect(() => {
+    fetchDashboardData();
+  }, [token]);
+
+  if (!dashboardData) {
+    return <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', backgroundColor: C.cream, color: C.forest }}>Verileriniz yükleniyor...</div>;
+  }
+
+  const user = dashboardData.user;
+  const rule = dashboardData.automation || { symbol: "Ayarlanmadı", threshold: 0, active: false };
 
   return (
     <div style={{ backgroundColor: C.cream, minHeight: "100vh" }}>
@@ -410,12 +461,12 @@ export default function Settings() {
             display: "flex", alignItems: "center", justifyContent: "center",
             fontSize: 16, fontWeight: 600, color: C.green, flexShrink: 0,
           }}>
-            AK
+            {getInitials(user.fullName)}
           </div>
           <div style={{ flex: 1 }}>
-            <p style={{ fontSize: 15, fontWeight: 600, color: "#fff", margin: "0 0 2px" }}>{MOCK_USER.fullName}</p>
-            <p style={{ fontSize: 12, color: C.mint, margin: "0 0 1px" }}>{MOCK_USER.email}</p>
-            <p style={{ fontSize: 12, color: C.sage, margin: 0 }}>{MOCK_USER.phone}</p>
+            <p style={{ fontSize: 15, fontWeight: 600, color: "#fff", margin: "0 0 2px" }}>{user.fullName ? user.fullName : "İsimsiz"}</p>
+            <p style={{ fontSize: 12, color: C.mint, margin: "0 0 1px" }}>Kayıtlı E-posta</p>
+            <p style={{ fontSize: 12, color: C.sage, margin: 0 }}>Onaylı Kullanıcı</p>
           </div>
         </div>
 
@@ -490,9 +541,9 @@ export default function Settings() {
                     <p style={{ fontSize: 11, color: C.forest + "55", margin: 0 }}>Eşik: {rule.threshold} TL</p>
                   </div>
                 </div>
-                <div style={{ display: "flex", alignItems: "center", gap: 6, backgroundColor: C.green + "15", borderRadius: 99, padding: "3px 10px" }}>
-                  <div style={{ width: 6, height: 6, borderRadius: "50%", backgroundColor: C.green }} />
-                  <span style={{ fontSize: 11, fontWeight: 600, color: C.green }}>Aktif</span>
+                <div style={{ display: "flex", alignItems: "center", gap: 6, backgroundColor: rule.active ? C.green + "15" : "#DC262615", borderRadius: 99, padding: "3px 10px" }}>
+                  <div style={{ width: 6, height: 6, borderRadius: "50%", backgroundColor: rule.active ? C.green : "#DC2626" }} />
+                  <span style={{ fontSize: 11, fontWeight: 600, color: rule.active ? C.green : "#DC2626" }}>{rule.active ? "Aktif" : "Pasif"}</span>
                 </div>
               </div>
               <button
@@ -523,8 +574,20 @@ export default function Settings() {
             <Row label="Çıkış Yap" danger onClick={() => setShowLogout(true)} last />
           </SectionCard>
 
+          <SectionCard>
+            <SectionHeader
+              title="Geliştirici"
+              icon={
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+                  <path d="M12 2v20M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6" stroke={C.mint} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+              }
+            />
+            <Row label="Demo Veri Doldur" value="Tüm tablolara örnek veriler ekle" onClick={handleSeed} />
+          </SectionCard>
+
           <p style={{ textAlign: "center", fontSize: 11, color: C.forest + "35", margin: "0.5rem 0 1rem" }}>
-            ParaÜstü v1.0.0 · Mock mod
+            ParaÜstü v1.0.0
           </p>
         </div>
       </main>

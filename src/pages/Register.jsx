@@ -2,11 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 
-const mockRegister = async (data) => {
-  await new Promise(r => setTimeout(r, 1000));
-  if (data.email === "var@test.com") throw new Error("Bu e-posta adresi zaten kullanımda.");
-  return { token: "mock-jwt-token-xyz" };
-};
+// mockRegister kaldırıldı, API kullanılacak
 
 const mockVerifyOtp = async (otp) => {
   await new Promise(r => setTimeout(r, 800));
@@ -220,7 +216,23 @@ export default function Register() {
     if (err) { setError(err); return; }
     setLoading(true);
     try {
-      await mockRegister(form);
+      const res = await fetch('/api/auth/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          fullName: form.fullName,
+          email: form.email,
+          phone: rawPhone,
+          pin: form.pin
+        })
+      });
+      
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.error || "Kayıt sırasında bir hata oluştu.");
+      }
+      
+      localStorage.setItem("temp_auth_token", data.token);
       setStep("otp");
     } catch(e) {
       setError(e.message);
@@ -234,7 +246,9 @@ export default function Register() {
   useEffect(() => {
     if (step === "success") {
       const timer = setTimeout(() => {
-        login("mock-token-from-register");
+        const token = localStorage.getItem("temp_auth_token") || "mock-token-fallback";
+        login(token);
+        localStorage.removeItem("temp_auth_token");
         navigate("/dashboard", { replace: true });
       }, 2000);
       return () => clearTimeout(timer);

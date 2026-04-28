@@ -27,7 +27,7 @@ const MOCK_STOCKS = [
   { symbol: "EKGYO.IS", name: "Emlak Konut GYO", price: 18.90, sector: "GYO" },
 ];
 
-const MOCK_ACTIVE_RULE = { symbol: "THYAO.IS", threshold: 100, isActive: true };
+// MOCK_ACTIVE_RULE silindi, backend'den gelecek
 
 const fmt = (n) =>
   new Intl.NumberFormat("tr-TR", { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(n);
@@ -254,11 +254,42 @@ function BottomSheet({ stock, existingRule, onSave, onClose }) {
   );
 }
 
+import { useEffect } from "react";
+import { useAuth } from "../context/AuthContext";
+
 export default function Automation() {
+  const { token, logout } = useAuth();
   const [query, setQuery] = useState("");
-  const [activeRule, setActiveRule] = useState(MOCK_ACTIVE_RULE);
+  const [activeRule, setActiveRule] = useState(null);
   const [selectedStock, setSelectedStock] = useState(null);
   const [toast, setToast] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (token) {
+      fetch('/api/dashboard', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      })
+      .then(res => {
+        if (!res.ok) { logout(); throw new Error("Oturum hatası"); }
+        return res.json();
+      })
+      .then(data => {
+        if (data.automation) {
+          setActiveRule({
+            symbol: data.automation.symbol,
+            threshold: data.automation.threshold,
+            isActive: data.automation.active
+          });
+        }
+        setLoading(false);
+      })
+      .catch(err => {
+        console.error(err);
+        setLoading(false);
+      });
+    }
+  }, [token, logout]);
 
   const showToast = (msg) => {
     setToast(msg);
@@ -290,6 +321,10 @@ export default function Automation() {
     setActiveRule(null);
     showToast("Kural silindi");
   };
+
+  if (loading) {
+    return <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', backgroundColor: C.cream, color: C.forest }}>Yükleniyor...</div>;
+  }
 
   return (
     <div style={{ backgroundColor: C.cream, minHeight: "100vh" }}>
