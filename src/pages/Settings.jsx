@@ -404,7 +404,8 @@ export default function Settings() {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       if (res.ok) {
-        showToast("Demo veriler eklendi!");
+        const data = await res.json();
+        showToast(data.message || "İşlem eklendi!");
         // Refresh data
         fetchDashboardData();
       } else {
@@ -538,7 +539,7 @@ export default function Settings() {
                   </div>
                   <div>
                     <p style={{ fontSize: 13, fontWeight: 600, color: C.forest, margin: "0 0 1px" }}>{rule.symbol}</p>
-                    <p style={{ fontSize: 11, color: C.forest + "55", margin: 0 }}>Eşik: {rule.threshold} TL</p>
+                    <p style={{ fontSize: 11, color: C.forest + "55", margin: 0 }}>Fiyata ulaşınca al</p>
                   </div>
                 </div>
                 <div style={{ display: "flex", alignItems: "center", gap: 6, backgroundColor: rule.active ? C.green + "15" : "#DC262615", borderRadius: 99, padding: "3px 10px" }}>

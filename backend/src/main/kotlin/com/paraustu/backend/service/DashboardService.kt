@@ -21,26 +21,41 @@ class DashboardService(
         val userId = UUID.fromString(userIdStr)
         
         // Automation Trigger: Eğer bakiye eşiği geçtiyse otomatik alım yap
-        val currentBalance = balanceRepository.findByUserId(userId)
         val currentAutomation = stackAutomationRepository.findByUserId(userId)
         
-        if (currentAutomation != null && currentAutomation.isEnabled && 
-            currentBalance != null && currentAutomation.thresholdAmount != null &&
-            currentBalance.totalBalance!! >= currentAutomation.thresholdAmount!!) {
-            
+        // Bakiyeyi taze çekelim
+        val balanceBefore = balanceRepository.findByUserId(userId)
+        
+        if (currentAutomation != null && currentAutomation.isEnabled && balanceBefore != null) {
             try {
-                portfolioService.buyStock(userIdStr, BuyRequest(
-                    symbol = currentAutomation.targetStock ?: "THYAO.IS",
-                    qty = BigDecimal.ONE,
-                    source = "roundup"
-                ))
+                val symbol = currentAutomation.targetStock ?: "THYAO.IS"
+                val stockInfo = portfolioService.getStockService().getStockInfo(symbol)
+                
+                if (stockInfo != null && stockInfo.price != null && stockInfo.price!! > BigDecimal.ZERO) {
+                    val stockPrice = stockInfo.price!!
+                    val availableBalance = balanceBefore.totalBalance ?: BigDecimal.ZERO
+                    
+                    println("--- OTOMASYON KONTROL: Bakiye=$availableBalance, Hisse Fiyatı=$stockPrice ---")
+                    
+                    if (availableBalance >= stockPrice) {
+                        println("--- OTOMASYON TETIKLENDI: $symbol ALINIYOR ---")
+                        val qtyToBuy = availableBalance.divide(stockPrice, 4, java.math.RoundingMode.DOWN)
+                        
+                        portfolioService.buyStock(userIdStr, BuyRequest(
+                            symbol = symbol,
+                            qty = qtyToBuy,
+                            source = "roundup"
+                        ))
+                    }
+                }
             } catch (e: Exception) {
-                // Hata durumunda sessizce devam et (demo için)
+                println("--- OTOMASYON HATASI: ${e.message} ---")
+                e.printStackTrace()
             }
         }
 
         val user = userRepository.findById(userId).orElseThrow { IllegalArgumentException("Kullanıcı bulunamadı") }
-        val balance = balanceRepository.findByUserId(userId)
+        val balanceAfter = balanceRepository.findByUserId(userId) // Alımdan sonraki bakiye
         val automation = stackAutomationRepository.findByUserId(userId)
         val transactions = transactionRepository.findByUserIdOrderByProcessedAtDesc(userId)
         val portfolio = portfolioRepository.findByUserId(userId)
@@ -49,7 +64,7 @@ class DashboardService(
 
         return DashboardResponse(
             user = UserInfoDto(fullName = user.fullName ?: "İsimsiz"),
-            balance = BalanceDto(roundupBalance = balance?.totalBalance ?: BigDecimal.ZERO),
+            balance = BalanceDto(roundupBalance = balanceAfter?.totalBalance ?: BigDecimal.ZERO),
             automation = automation?.let { 
                 AutomationDto(
                     active = it.isEnabled,
