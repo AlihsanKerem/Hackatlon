@@ -32,6 +32,14 @@ function calcPortfolio(stocks) {
 // Kumbaram Tab
 function KumbaramTab({ data }) {
   const { balance, automation, transactions } = data;
+  const navigate = useNavigate();
+  
+  // İşlemlerin toplam yuvarlama tutarını hesapla (Hackathon sunumu için tutarlı görünmesi adına)
+  const computedBalance = transactions.reduce((sum, tx) => sum + tx.roundup, 0);
+
+  const [toast, setToast] = useState(null);
+  const showToast = (msg) => { setToast(msg); setTimeout(() => setToast(null), 2500); };
+
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
 
@@ -46,7 +54,7 @@ function KumbaramTab({ data }) {
           Biriken Para Üstü
         </p>
         <p style={{ color: "#fff", fontSize: 40, fontWeight: 700, margin: "0 0 4px", letterSpacing: "-0.02em" }}>
-          {fmt(balance?.roundupBalance || 0)} ₺
+          {fmt(computedBalance)} ₺
         </p>
         {automation?.active && (
           <div style={{
@@ -78,7 +86,12 @@ function KumbaramTab({ data }) {
           display: "flex", justifyContent: "space-between", alignItems: "center",
         }}>
           <span style={{ fontSize: 14, fontWeight: 600, color: C.forest }}>Son İşlemler</span>
-          <span style={{ fontSize: 12, color: C.green, fontWeight: 500, cursor: "pointer" }}>Tümünü gör →</span>
+          <span 
+            onClick={() => navigate("/transactions")}
+            style={{ fontSize: 12, color: C.green, fontWeight: 500, cursor: "pointer" }}
+          >
+            Tümünü gör →
+          </span>
         </div>
 
         {transactions.length === 0 ? (
@@ -141,6 +154,21 @@ function KumbaramTab({ data }) {
         Backend Bağlantısını Test Et (Örnek İstek)
       </button>
 
+      {/* Toast */}
+      {toast && (
+        <div style={{
+          position: "fixed", bottom: 80, left: "50%",
+          transform: "translateX(-50%)",
+          backgroundColor: C.forest,
+          color: "#fff", fontSize: 13, fontWeight: 500,
+          padding: "0.6rem 1.2rem", borderRadius: 99,
+          zIndex: 300, whiteSpace: "nowrap",
+          boxShadow: "0 4px 16px rgba(1,38,25,0.25)",
+        }}>
+          {toast}
+        </div>
+      )}
+
     </div>
   );
 }
@@ -149,9 +177,85 @@ function KumbaramTab({ data }) {
 function HisselerimTab({ data }) {
   const { portfolio } = data;
   const { totalValue, pnl, pnlPct } = calcPortfolio(portfolio);
+  const { token } = useAuth();
   const [buyModal, setBuyModal]   = useState(false);
   const [sellModal, setSellModal] = useState(null);
-  const [buyForm, setBuyForm]     = useState({ symbol: "", qty: "", source: "roundup" });
+  const [buyForm, setBuyForm]     = useState({ symbol: "THYAO.IS", qty: "1", source: "roundup" });
+  const [loading, setLoading]     = useState(false);
+
+  const handleBuy = async () => {
+    console.log("handleBuy triggered", buyForm);
+    if (!buyForm.symbol || !buyForm.qty || isNaN(buyForm.qty) || buyForm.qty <= 0) {
+      alert("Lütfen geçerli bir hisse sembolü ve adet giriniz!");
+      return;
+    }
+    setLoading(true);
+    try {
+      const res = await fetch('/api/portfolio/buy', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          symbol: buyForm.symbol.toUpperCase(),
+          qty: Number(buyForm.qty),
+          source: buyForm.source
+        })
+      });
+      const result = await res.json();
+      if (res.ok && result.success) {
+        alert("Satın alma başarılı!");
+        setBuyModal(false);
+        setBuyForm({ symbol: "THYAO.IS", qty: "1", source: "roundup" });
+        window.location.reload(); // En kolayı dashboard'ı yenilemek
+      } else {
+        alert("Hata: " + (result.message || "Bilinmeyen hata"));
+      }
+    } catch (e) {
+      alert("Sunucuya bağlanırken hata oluştu.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSell = async () => {
+    console.log("handleSell triggered", sellModal);
+    if (!sellModal.sellQty || isNaN(sellModal.sellQty) || sellModal.sellQty <= 0) {
+      alert("Lütfen satmak istediğiniz adedi giriniz!");
+      return;
+    }
+    if (sellModal.sellQty > sellModal.qty) {
+      alert("Sahip olduğunuzdan fazla satamazsınız!");
+      return;
+    }
+    setLoading(true);
+    try {
+      const res = await fetch('/api/portfolio/sell', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          symbol: sellModal.symbol,
+          qty: Number(sellModal.sellQty)
+        })
+      });
+      const result = await res.json();
+      if (res.ok && result.success) {
+        alert("Satış başarılı!");
+        setSellModal(null);
+        window.location.reload();
+      } else {
+        alert("Hata: " + (result.message || "Bilinmeyen hata"));
+      }
+    } catch (e) {
+      alert("Sunucuya bağlanırken hata oluştu.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
@@ -256,7 +360,7 @@ function HisselerimTab({ data }) {
               </div>
 
               <button
-                onClick={() => setSellModal(s)}
+                onClick={() => setSellModal({ ...s, sellQty: 1 })}
                 style={{
                   padding: "5px 10px",
                   backgroundColor: "transparent",
@@ -355,15 +459,18 @@ function HisselerimTab({ data }) {
                   ))}
                 </div>
               </div>
-              <button style={{
+              <button 
+                onClick={handleBuy}
+                disabled={loading}
+                style={{
                 width: "100%", padding: "0.75rem",
-                backgroundColor: C.green, color: "#fff",
+                backgroundColor: loading ? C.sage : C.green, color: "#fff",
                 border: "none", borderRadius: 9,
                 fontSize: 15, fontWeight: 600,
-                cursor: "pointer", fontFamily: "inherit",
+                cursor: loading ? "not-allowed" : "pointer", fontFamily: "inherit",
                 marginTop: 4,
               }}>
-                Al
+                {loading ? "İşleniyor..." : "Al"}
               </button>
             </div>
           </div>
@@ -400,6 +507,8 @@ function HisselerimTab({ data }) {
                 <input
                   type="number"
                   placeholder={`Maks. ${sellModal.qty}`}
+                  value={sellModal.sellQty || ""}
+                  onChange={e => setSellModal(s => ({ ...s, sellQty: e.target.value }))}
                   style={{
                     width: "100%", boxSizing: "border-box",
                     padding: "0.6rem 0.85rem",
@@ -409,14 +518,17 @@ function HisselerimTab({ data }) {
                   }}
                 />
               </div>
-              <button style={{
+              <button 
+                onClick={handleSell}
+                disabled={loading}
+                style={{
                 width: "100%", padding: "0.75rem",
-                backgroundColor: "#DC2626", color: "#fff",
+                backgroundColor: loading ? C.sage : "#DC2626", color: "#fff",
                 border: "none", borderRadius: 9,
                 fontSize: 15, fontWeight: 600,
-                cursor: "pointer", fontFamily: "inherit",
+                cursor: loading ? "not-allowed" : "pointer", fontFamily: "inherit",
               }}>
-                Sat
+                {loading ? "İşleniyor..." : "Sat"}
               </button>
             </div>
           </div>
@@ -427,6 +539,8 @@ function HisselerimTab({ data }) {
 }
 
 // ── Main Dashboard ─────────────────────────────────────────
+import { useNavigate } from "react-router-dom";
+
 export default function Dashboard() {
   const { token, logout } = useAuth();
   const [activeTab, setActiveTab] = useState("kumbaras");
