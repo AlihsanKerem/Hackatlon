@@ -26,10 +26,10 @@ class AuthService(
         }
 
         val user = User().apply {
-            this.fullName = request.fullName.trim()
-            this.email = email
-            this.phone = phone
-            this.passwordHash = passwordUtils.hashPassword(pin)
+            this.fullName = request.fullName
+            this.email = request.email
+            this.phone = request.phone
+            this.passwordHash = passwordUtils.hashPassword(request.pin)
         }
 
         val savedUser = userRepository.save(user)
@@ -47,7 +47,7 @@ class AuthService(
         val user = userRepository.findByEmail(email)
             ?: throw IllegalArgumentException("E-posta veya şifre hatalı.")
 
-        if (!passwordUtils.checkPassword(pin, user.passwordHash!!)) {
+        if (!passwordUtils.checkPassword(request.pin, user.passwordHash ?: "")) {
             throw IllegalArgumentException("E-posta veya şifre hatalı.")
         }
 
