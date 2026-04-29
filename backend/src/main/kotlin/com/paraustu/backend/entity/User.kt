@@ -16,7 +16,6 @@ class User {
     @Column(unique = true)
     var email: String? = null
     
-    @Convert(converter = com.paraustu.backend.security.CryptoConverter::class)
     var passwordHash: String? = null
     
     @Column(unique = true)

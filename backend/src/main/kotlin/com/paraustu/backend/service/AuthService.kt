@@ -14,18 +14,22 @@ class AuthService(
 ) {
 
     fun register(request: RegisterRequest): AuthResponse {
-        if (userRepository.existsByEmail(request.email)) {
+        val email = request.email.trim()
+        val phone = request.phone.trim()
+        val pin = request.pin.trim()
+
+        if (userRepository.existsByEmail(email)) {
             throw IllegalArgumentException("Bu e-posta adresi zaten kullanımda.")
         }
-        if (userRepository.existsByPhone(request.phone)) {
+        if (userRepository.existsByPhone(phone)) {
             throw IllegalArgumentException("Bu telefon numarası zaten kullanımda.")
         }
 
         val user = User().apply {
-            this.fullName = request.fullName
-            this.email = request.email
-            this.phone = request.phone
-            this.passwordHash = passwordUtils.hashPassword(request.pin)
+            this.fullName = request.fullName.trim()
+            this.email = email
+            this.phone = phone
+            this.passwordHash = passwordUtils.hashPassword(pin)
         }
 
         val savedUser = userRepository.save(user)
@@ -37,10 +41,13 @@ class AuthService(
     }
 
     fun login(request: com.paraustu.backend.dto.LoginRequest): AuthResponse {
-        val user = userRepository.findByEmail(request.email)
+        val email = request.email.trim()
+        val pin = request.pin.trim()
+
+        val user = userRepository.findByEmail(email)
             ?: throw IllegalArgumentException("E-posta veya şifre hatalı.")
 
-        if (!passwordUtils.checkPassword(request.pin, user.passwordHash!!)) {
+        if (!passwordUtils.checkPassword(pin, user.passwordHash!!)) {
             throw IllegalArgumentException("E-posta veya şifre hatalı.")
         }
 
