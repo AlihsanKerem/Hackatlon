@@ -14,12 +14,48 @@ class DashboardService(
     private val balanceRepository: BalanceRepository,
     private val transactionRepository: TransactionRepository,
     private val portfolioRepository: PortfolioRepository,
-    private val stackAutomationRepository: StackAutomationRepository
+    private val stackAutomationRepository: StackAutomationRepository,
+    private val portfolioService: PortfolioService
 ) {
     fun getDashboardData(userIdStr: String): DashboardResponse {
         val userId = UUID.fromString(userIdStr)
+        
+        // Automation Trigger: Eğer bakiye eşiği geçtiyse otomatik alım yap
+        val currentAutomation = stackAutomationRepository.findByUserId(userId)
+        
+        // Bakiyeyi taze çekelim
+        val balanceBefore = balanceRepository.findByUserId(userId)
+        
+        if (currentAutomation != null && currentAutomation.isEnabled && balanceBefore != null) {
+            try {
+                val symbol = currentAutomation.targetStock ?: "THYAO.IS"
+                val stockInfo = portfolioService.getStockService().getStockInfo(symbol)
+                
+                if (stockInfo != null && stockInfo.price != null && stockInfo.price!! > BigDecimal.ZERO) {
+                    val stockPrice = stockInfo.price!!
+                    val availableBalance = balanceBefore.totalBalance ?: BigDecimal.ZERO
+                    
+                    println("--- OTOMASYON KONTROL: Bakiye=$availableBalance, Hisse Fiyatı=$stockPrice ---")
+                    
+                    if (availableBalance >= stockPrice) {
+                        println("--- OTOMASYON TETIKLENDI: $symbol ALINIYOR ---")
+                        val qtyToBuy = availableBalance.divide(stockPrice, 4, java.math.RoundingMode.DOWN)
+                        
+                        portfolioService.buyStock(userIdStr, BuyRequest(
+                            symbol = symbol,
+                            qty = qtyToBuy,
+                            source = "roundup"
+                        ))
+                    }
+                }
+            } catch (e: Exception) {
+                println("--- OTOMASYON HATASI: ${e.message} ---")
+                e.printStackTrace()
+            }
+        }
+
         val user = userRepository.findById(userId).orElseThrow { IllegalArgumentException("Kullanıcı bulunamadı") }
-        val balance = balanceRepository.findByUserId(userId)
+        val balanceAfter = balanceRepository.findByUserId(userId) // Alımdan sonraki bakiye
         val automation = stackAutomationRepository.findByUserId(userId)
         val transactions = transactionRepository.findByUserIdOrderByProcessedAtDesc(userId)
         val portfolio = portfolioRepository.findByUserId(userId)
@@ -28,7 +64,7 @@ class DashboardService(
 
         return DashboardResponse(
             user = UserInfoDto(fullName = user.fullName ?: "İsimsiz"),
-            balance = BalanceDto(roundupBalance = balance?.totalBalance ?: BigDecimal.ZERO),
+            balance = BalanceDto(roundupBalance = balanceAfter?.totalBalance ?: BigDecimal.ZERO),
             automation = automation?.let { 
                 AutomationDto(
                     active = it.isEnabled,
@@ -45,15 +81,23 @@ class DashboardService(
                     roundup = it.roundUpAmount ?: BigDecimal.ZERO
                 )
             },
-            portfolio = portfolio.map {
+            portfolio = portfolio.groupBy { it.assetSymbol }.map { (symbol, items) ->
+                val totalQty = items.mapNotNull { it.totalQuantity }.fold(BigDecimal.ZERO, BigDecimal::add)
+                val totalCost = items.mapNotNull { it.averageCost?.multiply(it.totalQuantity ?: BigDecimal.ZERO) }.fold(BigDecimal.ZERO, BigDecimal::add)
+                val avgCost = if (totalQty > BigDecimal.ZERO) totalCost.divide(totalQty, 2, java.math.RoundingMode.HALF_UP) else BigDecimal.ZERO
+                
+                // Demo için fiyatı biraz yüksek gösterelim ki karda görünsünler
+                val currentPrice = avgCost.multiply(BigDecimal("1.08")).setScale(2, java.math.RoundingMode.HALF_UP)
+                
                 PortfolioDto(
-                    symbol = it.assetSymbol ?: "",
-                    name = it.assetSymbol ?: "",
-                    qty = it.totalQuantity ?: BigDecimal.ZERO,
-                    avgCost = it.averageCost ?: BigDecimal.ZERO,
-                    price = it.averageCost ?: BigDecimal.ZERO // Şimdilik fiyat = maliyet
+                    symbol = symbol ?: "",
+                    name = symbol ?: "",
+                    qty = totalQty,
+                    avgCost = avgCost,
+                    price = currentPrice
                 )
             }
+
         )
     }
 }

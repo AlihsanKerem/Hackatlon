@@ -85,7 +85,7 @@ function ActiveRuleCard({ rule, stocks, onToggle, onDelete }) {
         borderRadius: 8, padding: "0.6rem 0.8rem", marginBottom: "0.75rem",
       }}>
         <p style={{ fontSize: 13, color: rule.isActive ? C.mint : C.forest + "70", margin: 0 }}>
-          Biriken para üstü <strong style={{ color: rule.isActive ? "#fff" : C.forest }}>{rule.threshold} TL</strong>'ye ulaşınca otomatik satın al
+          Biriken para üstü <strong style={{ color: rule.isActive ? "#fff" : C.forest }}>hisse fiyatına</strong> ulaşınca otomatik satın al
         </p>
       </div>
 
@@ -132,7 +132,7 @@ function BottomSheet({ stock, existingRule, onSave, onClose }) {
     setSaving(true);
     await new Promise(r => setTimeout(r, 700));
     setSaving(false);
-    onSave({ symbol: stock.symbol, threshold: Number(threshold) });
+    onSave({ symbol: stock.symbol, threshold: 0 });
   };
 
   return (
@@ -177,32 +177,8 @@ function BottomSheet({ stock, existingRule, onSave, onClose }) {
         </div>
 
         <div style={{ marginBottom: "1rem" }}>
-          <label style={{ fontSize: 12, fontWeight: 500, color: C.forest + "80", display: "block", marginBottom: 6 }}>
-            Eşik tutarı (TL)
-          </label>
-          <div style={{ position: "relative" }}>
-            <input
-              type="number"
-              value={threshold}
-              onChange={e => setThreshold(e.target.value)}
-              min="1"
-              style={{
-                width: "100%", boxSizing: "border-box",
-                padding: "0.65rem 2.5rem 0.65rem 0.9rem",
-                border: `1.5px solid ${C.sage}`,
-                borderRadius: 8, fontSize: 15, fontWeight: 600,
-                color: C.forest, outline: "none", fontFamily: "inherit",
-                backgroundColor: "#fff",
-              }}
-            />
-            <span style={{
-              position: "absolute", right: 12, top: "50%",
-              transform: "translateY(-50%)",
-              fontSize: 13, color: C.forest + "50", fontWeight: 500,
-            }}>₺</span>
-          </div>
-          <p style={{ fontSize: 12, color: C.forest + "55", margin: "6px 0 0", lineHeight: 1.5 }}>
-            Biriken para üstü bu tutara ulaştığında 1 adet {stock.symbol} otomatik alınır.
+          <p style={{ fontSize: 13, color: C.forest, margin: "0", lineHeight: 1.5, fontWeight: 500 }}>
+            Hisse alım otomasyonu aktifleştirildiğinde, biriken para üstleriniz <strong>{stock.symbol}</strong> güncel piyasa fiyatına ulaştığı anda otomatik alım yapılır.
           </p>
         </div>
 
@@ -236,17 +212,17 @@ function BottomSheet({ stock, existingRule, onSave, onClose }) {
         ) : (
           <button
             onClick={handleSave}
-            disabled={saving || !threshold || Number(threshold) <= 0}
+            disabled={saving}
             style={{
               width: "100%", padding: "0.75rem",
-              backgroundColor: saving || !threshold ? C.sage : C.green,
+              backgroundColor: saving ? C.sage : C.green,
               color: "#fff", border: "none", borderRadius: 9,
               fontSize: 15, fontWeight: 600,
               cursor: saving ? "not-allowed" : "pointer",
               fontFamily: "inherit",
             }}
           >
-            {saving ? "Kaydediliyor..." : "Otomasyonu Kaydet"}
+            {saving ? "Kaydediliyor..." : "Otomasyonu Başlat"}
           </button>
         )}
       </div>
@@ -331,21 +307,71 @@ export default function Automation() {
     );
   }, [query]);
 
-  const handleSave = ({ symbol, threshold }) => {
-    setActiveRule({ symbol, threshold, isActive: true });
-    setSelectedStock(null);
-    showToast("Otomasyon kuralı kaydedildi");
+  const handleSave = async ({ symbol, threshold }) => {
+    try {
+      const res = await fetch('/api/automation/save', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ active: true, symbol, threshold })
+      });
+      if (res.ok) {
+        setActiveRule({ symbol, threshold, isActive: true });
+        setSelectedStock(null);
+        showToast("Otomasyon kuralı kaydedildi");
+      } else {
+        showToast("Hata: Kural kaydedilemedi");
+      }
+    } catch (e) {
+      showToast("Sunucu hatası");
+    }
   };
 
-  const handleToggle = () => {
-    setActiveRule(r => ({ ...r, isActive: !r.isActive }));
-    showToast(activeRule.isActive ? "Otomasyon duraklatıldı" : "Otomasyon aktif edildi");
+  const handleToggle = async () => {
+    const newState = !activeRule.isActive;
+    try {
+      const res = await fetch('/api/automation/save', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ 
+          active: newState, 
+          symbol: activeRule.symbol, 
+          threshold: activeRule.threshold 
+        })
+      });
+      if (res.ok) {
+        setActiveRule(r => ({ ...r, isActive: newState }));
+        showToast(newState ? "Otomasyon aktif edildi" : "Otomasyon duraklatıldı");
+      } else {
+        showToast("Hata: Durum güncellenemedi");
+      }
+    } catch (e) {
+      showToast("Sunucu hatası");
+    }
   };
 
-  const handleDelete = () => {
-    setActiveRule(null);
-    showToast("Kural silindi");
+  const handleDelete = async () => {
+    try {
+      const res = await fetch('/api/automation', {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (res.ok) {
+        setActiveRule(null);
+        showToast("Kural silindi");
+      } else {
+        showToast("Hata: Kural silinemedi");
+      }
+    } catch (e) {
+      showToast("Sunucu hatası");
+    }
   };
+
 
   if (loading) {
     return <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', backgroundColor: C.cream, color: C.forest }}>Yükleniyor...</div>;
@@ -359,7 +385,7 @@ export default function Automation() {
         <div style={{ marginBottom: "1.25rem" }}>
           <h1 style={{ fontSize: 20, fontWeight: 700, color: C.forest, margin: "0 0 3px" }}>Otomasyon</h1>
           <p style={{ fontSize: 13, color: C.forest + "60", margin: 0 }}>
-            Biriken para üstün eşiğe ulaşınca otomatik hisse al
+            Biriken para üstün hisse fiyatına ulaşınca otomatik al
           </p>
         </div>
 

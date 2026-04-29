@@ -13,14 +13,20 @@ import java.util.UUID
 @Service
 class PortfolioService(
     private val portfolioRepository: PortfolioRepository,
-    private val balanceRepository: BalanceRepository
+    private val balanceRepository: BalanceRepository,
+    private val stockService: StockService
 ) {
+    fun getStockService() = stockService
 
     @Transactional
     fun buyStock(userIdStr: String, request: BuyRequest) {
         val userId = UUID.fromString(userIdStr)
-        val price = BigDecimal("100.00") // Mock fiyat, gerçekte Yahoo Finance'ten alınabilir
-
+        
+        // Yahoo Finance üzerinden gerçek fiyatı alıyoruz
+        val stockInfo = stockService.getStockInfo(request.symbol)
+            ?: throw IllegalArgumentException("Hisse verisi alınamadı: ${request.symbol}")
+        
+        val price = stockInfo.price ?: BigDecimal("100.00")
         val totalCost = price.multiply(request.qty)
 
         if (request.source == "roundup") {
@@ -59,7 +65,10 @@ class PortfolioService(
     @Transactional
     fun sellStock(userIdStr: String, request: SellRequest) {
         val userId = UUID.fromString(userIdStr)
-        val price = BigDecimal("100.00")
+        
+        // Gerçek fiyatı al
+        val stockInfo = stockService.getStockInfo(request.symbol)
+        val price = stockInfo?.price ?: BigDecimal("100.00")
 
         val existingPortfolio = portfolioRepository.findByUserId(userId).find { it.assetSymbol == request.symbol }
             ?: throw IllegalArgumentException("Bu hisseye sahip değilsiniz")
