@@ -220,10 +220,10 @@ export default function Register() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          fullName: form.fullName,
-          email: form.email,
-          phone: rawPhone,
-          pin: form.pin
+          fullName: form.fullName.trim(),
+          email: form.email.trim(),
+          phone: rawPhone.trim(),
+          pin: form.pin.trim()
         })
       });
       
