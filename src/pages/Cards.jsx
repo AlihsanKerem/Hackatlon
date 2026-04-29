@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Navbar from "../components/Navbar";
+import axiosInstance from "../api/axiosInstance";
 
 const C = {
   forest: "#012619",
@@ -16,12 +17,16 @@ const INITIAL_CARDS = [
   { id: 2, bank: "B Bankası", last4: "5678", expiry: "11/26", active: false },
 ];
 
-const bankColor = (bank) => bank === "A Bankası"
-  ? { bg: "#E8F4FD", text: "#1A6FA8", accent: "#3A9FD8" }
-  : { bg: "#F0EBF8", text: "#6B3FA0", accent: "#9B6DD1" };
+const bankColor = (bank) => {
+  const name = (bank || "").toLowerCase();
+  if (name.includes("akbank")) return { bg: "#FEF2F2", text: "#991B1B", accent: "#DC2626" };
+  if (name.includes("garanti")) return { bg: "#F0FDF4", text: "#166534", accent: "#22C55E" };
+  if (name.includes("is") || name.includes("iş")) return { bg: "#EFF6FF", text: "#1E40AF", accent: "#3B82F6" };
+  return { bg: "#F9FAFB", text: "#374151", accent: "#6B7280" };
+};
 
 function BankIcon({ bank, size = 36 }) {
-  const bc = bankColor(bank);
+  const bc = bankColor(bank || "Banka");
   return (
     <div style={{
       width: size, height: size, borderRadius: 10,
@@ -31,7 +36,7 @@ function BankIcon({ bank, size = 36 }) {
       fontSize: 11, fontWeight: 700, color: bc.text,
       letterSpacing: "0.02em",
     }}>
-      {bank.split(" ")[0][0]}B
+      {(bank || "B").split(" ")[0][0]}B
     </div>
   );
 }
@@ -48,7 +53,9 @@ function CardChip() {
 }
 
 function CardVisual({ card }) {
-  const bc = bankColor(card.bank);
+  const bc = bankColor(card.bankName || card.bank);
+  const last4 = card.last4 || (card.cardNumber ? card.cardNumber.slice(-4) : "••••");
+  
   return (
     <div style={{
       width: "100%", aspectRatio: "1.6",
@@ -71,15 +78,15 @@ function CardVisual({ card }) {
         backgroundColor: bc.accent + "10",
       }} />
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", position: "relative" }}>
-        <span style={{ fontSize: 13, fontWeight: 700, color: bc.text }}>{card.bank}</span>
+        <span style={{ fontSize: 13, fontWeight: 700, color: bc.text }}>{card.bankName || card.bank}</span>
         <CardChip />
       </div>
       <div style={{ position: "relative" }}>
         <p style={{ fontSize: 15, fontWeight: 600, color: C.forest, letterSpacing: "0.12em", margin: "0 0 6px" }}>
-          •••• •••• •••• {card.last4}
+          •••• •••• •••• {last4}
         </p>
         <p style={{ fontSize: 11, color: C.forest + "60", margin: 0, letterSpacing: "0.04em" }}>
-          SON KULLANMA  {card.expiry}
+          SON KULLANMA  {card.expiryDate || card.expiry}
         </p>
       </div>
     </div>
@@ -314,7 +321,8 @@ export default function Cards() {
   const [toast, setToast] = useState(null);
 
   const fetchCards = async () => {
-    const userId = localStorage.getItem("userId");
+    const userId = localStorage.getItem("userId") || localStorage.getItem("token");
+    if (!userId) return;
     try {
       const res = await axiosInstance.get(`/cards?userId=${userId}`);
       setCards(res.data);
@@ -329,7 +337,7 @@ export default function Cards() {
     fetchCards();
   }, []);
 
-  const activeCard = cards.find(c => c.active);
+  const activeCard = cards.find(c => c.isActive || c.active);
 
   const showToast = (msg) => {
     setToast(msg);
@@ -340,7 +348,7 @@ export default function Cards() {
     const userId = localStorage.getItem("userId");
     try {
       await axiosInstance.post(`/cards/${id}/activate?userId=${userId}`);
-      setCards(cs => cs.map(c => ({ ...c, isActive: c.id === id })));
+      setCards(cs => cs.map(c => ({ ...c, isActive: (c.cardId === id || c.id === id) })));
       showToast("Aktif kart güncellendi");
     } catch (err) {
       console.error("Set active card error:", err);
@@ -457,11 +465,11 @@ export default function Cards() {
                   transition: "background-color 0.2s",
                 }}
               >
-                <BankIcon bank={card.bank} />
+                <BankIcon bank={card.bankName || card.bank} />
                 <div style={{ flex: 1, marginLeft: 12 }}>
                   <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
-                    <p style={{ fontSize: 14, fontWeight: 600, color: C.forest, margin: 0 }}>{card.bank}</p>
-                    {card.active && (
+                    <p style={{ fontSize: 14, fontWeight: 600, color: C.forest, margin: 0 }}>{card.bankName || card.bank}</p>
+                    {(card.isActive || card.active) && (
                       <span style={{
                         fontSize: 10, fontWeight: 700,
                         backgroundColor: C.green + "20",
@@ -472,14 +480,14 @@ export default function Cards() {
                     )}
                   </div>
                   <p style={{ fontSize: 12, color: C.forest + "55", margin: "2px 0 0", letterSpacing: "0.04em" }}>
-                    •••• {card.last4} · {card.expiry}
+                    •••• {card.last4 || (card.cardNumber ? card.cardNumber.slice(-4) : "••••")} · {card.expiryDate || card.expiry}
                   </p>
                 </div>
 
                 <div style={{ display: "flex", gap: 7, alignItems: "center" }}>
-                  {!card.active && (
+                  {!(card.isActive || card.active) && (
                     <button
-                      onClick={() => setActive(card.id)}
+                      onClick={() => setActive(card.cardId || card.id)}
                       style={{
                         padding: "5px 10px",
                         backgroundColor: "transparent",

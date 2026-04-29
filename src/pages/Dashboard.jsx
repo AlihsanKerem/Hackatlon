@@ -1,6 +1,8 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import { useAuth } from "../context/AuthContext";
+import axiosInstance from "../api/axiosInstance";
 
 const C = {
   forest: "#012619",
@@ -67,7 +69,7 @@ function KumbaramTab({ data }) {
           }}>
             <div style={{ width: 6, height: 6, borderRadius: "50%", backgroundColor: C.green }} />
             <span style={{ color: C.green, fontSize: 12, fontWeight: 500 }}>
-              {automation.threshold} TL → {automation.symbol}
+              Hisse Fiyatı → {automation.symbol}
             </span>
           </div>
         )}
@@ -132,49 +134,12 @@ function KumbaramTab({ data }) {
         ))}
       </div>
 
-      {/* Test Backend Connection Button */}
-      <button
-        onClick={async () => {
-          try {
-            const res = await fetch('/api/islem/yuvarla?harcama=42.30&tip=5');
-            const data = await res.json();
-            alert("Backend'den başarıyla yanıt geldi!\nHarcanan: " + data.harcamaTutari + "\nBiriken Para Üstü: " + data.birikenPara);
-            console.log("Backend Yanıtı:", data);
-          } catch (error) {
-            alert("Backend bağlantı hatası! Lütfen konsolu kontrol edin.");
-            console.error("Fetch hatası:", error);
-          }
-        }}
-        style={{
-          padding: "10px", backgroundColor: C.forest, color: C.cream, 
-          border: "none", borderRadius: 8, cursor: "pointer", 
-          fontWeight: "bold", marginTop: 10
-        }}
-      >
-        Backend Bağlantısını Test Et (Örnek İstek)
-      </button>
-
-      {/* Toast */}
-      {toast && (
-        <div style={{
-          position: "fixed", bottom: 80, left: "50%",
-          transform: "translateX(-50%)",
-          backgroundColor: C.forest,
-          color: "#fff", fontSize: 13, fontWeight: 500,
-          padding: "0.6rem 1.2rem", borderRadius: 99,
-          zIndex: 300, whiteSpace: "nowrap",
-          boxShadow: "0 4px 16px rgba(1,38,25,0.25)",
-        }}>
-          {toast}
-        </div>
-      )}
-
     </div>
   );
 }
 
 // Hisselerim Tab
-function HisselerimTab({ data }) {
+function HisselerimTab({ data, showToast }) {
   const { portfolio } = data;
   const { totalValue, pnl, pnlPct } = calcPortfolio(portfolio);
   const { token } = useAuth();
@@ -191,26 +156,18 @@ function HisselerimTab({ data }) {
     }
     setLoading(true);
     try {
-      const res = await fetch('/api/portfolio/buy', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          symbol: buyForm.symbol.toUpperCase(),
-          qty: Number(buyForm.qty),
-          source: buyForm.source
-        })
+      const res = await axiosInstance.post('/portfolio/buy', {
+        symbol: buyForm.symbol.toUpperCase(),
+        qty: Number(buyForm.qty),
+        source: buyForm.source
       });
-      const result = await res.json();
-      if (res.ok && result.success) {
-        alert("Satın alma başarılı!");
+      if (res.status === 200 && res.data.success) {
+        showToast(`${buyForm.qty} adet ${buyForm.symbol} başarıyla alındı!`);
         setBuyModal(false);
         setBuyForm({ symbol: "THYAO.IS", qty: "1", source: "roundup" });
-        window.location.reload(); // En kolayı dashboard'ı yenilemek
+        setTimeout(() => window.location.reload(), 1500);
       } else {
-        alert("Hata: " + (result.message || "Bilinmeyen hata"));
+        alert("Hata: " + (res.data.message || "Bilinmeyen hata"));
       }
     } catch (e) {
       alert("Sunucuya bağlanırken hata oluştu.");
@@ -231,24 +188,19 @@ function HisselerimTab({ data }) {
     }
     setLoading(true);
     try {
-      const res = await fetch('/api/portfolio/sell', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          symbol: sellModal.symbol,
-          qty: Number(sellModal.sellQty)
-        })
+      const sellQty = Number(sellModal.sellQty);
+      const proceeds = (sellQty * sellModal.price).toFixed(2);
+      
+      const res = await axiosInstance.post('/portfolio/sell', {
+        symbol: sellModal.symbol,
+        qty: sellQty
       });
-      const result = await res.json();
-      if (res.ok && result.success) {
-        alert("Satış başarılı!");
+      if (res.status === 200 && res.data.success) {
+        showToast(`${proceeds} TL banka hesabınıza aktarıldı!`);
         setSellModal(null);
-        window.location.reload();
+        setTimeout(() => window.location.reload(), 1500);
       } else {
-        alert("Hata: " + (result.message || "Bilinmeyen hata"));
+        alert("Hata: " + (res.data.message || "Bilinmeyen hata"));
       }
     } catch (e) {
       alert("Sunucuya bağlanırken hata oluştu.");
@@ -349,7 +301,7 @@ function HisselerimTab({ data }) {
 
               <div style={{ flex: 1 }}>
                 <p style={{ fontSize: 14, fontWeight: 600, color: C.forest, margin: "0 0 2px" }}>{s.symbol}</p>
-                <p style={{ fontSize: 12, color: C.forest + "55", margin: 0 }}>{s.qty} adet · Ort. {fmt(s.avgCost)} ₺</p>
+                <p style={{ fontSize: 12, color: C.forest + "55", margin: 0 }}>{Number(s.qty).toString()} adet · Ort. {fmt(s.avgCost)} ₺</p>
               </div>
 
               <div style={{ textAlign: "right", marginRight: 12 }}>
@@ -539,29 +491,48 @@ function HisselerimTab({ data }) {
 }
 
 // ── Main Dashboard ─────────────────────────────────────────
-import { useNavigate } from "react-router-dom";
 
 export default function Dashboard() {
   const { token, logout } = useAuth();
   const [activeTab, setActiveTab] = useState("kumbaras");
   const [dashboardData, setDashboardData] = useState(null);
+  const [toast, setToast] = useState(null);
+
+  const showToast = (msg) => { 
+    setToast(msg); 
+    setTimeout(() => setToast(null), 3000); 
+  };
 
   useEffect(() => {
     if (token) {
-      fetch('/api/dashboard', {
-        headers: { 'Authorization': `Bearer ${token}` }
-      })
+      const userId = localStorage.getItem("userId") || token;
+      axiosInstance.get(`/dashboard?userId=${userId}`)
       .then(res => {
-        if (!res.ok) { logout(); throw new Error("Oturum hatası"); }
-        return res.json();
+        setDashboardData(res.data);
       })
-      .then(data => setDashboardData(data))
-      .catch(console.error);
+      .catch(err => {
+        console.error("Dashboard fetch error:", err);
+        if (err.response?.status === 401) {
+          logout();
+        } else {
+          // Error state for UI
+          setDashboardData({ error: true });
+        }
+      });
     }
   }, [token, logout]);
 
   if (!dashboardData) {
     return <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', backgroundColor: C.cream, color: C.forest }}>Verileriniz yükleniyor...</div>;
+  }
+
+  if (dashboardData.error) {
+    return (
+      <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', height: '100vh', backgroundColor: C.cream, color: C.forest, padding: '2rem', textAlign: 'center' }}>
+        <p style={{ fontSize: 16, fontWeight: 600, marginBottom: '1rem' }}>Veriler alınırken bir hata oluştu.</p>
+        <button onClick={() => window.location.reload()} style={{ padding: '0.75rem 1.5rem', backgroundColor: C.green, color: '#fff', border: 'none', borderRadius: 8, cursor: 'pointer' }}>Tekrar Dene</button>
+      </div>
+    );
   }
 
   const { user } = dashboardData;
@@ -610,8 +581,23 @@ export default function Dashboard() {
           </button>
         </div>
 
-        {activeTab === "kumbaras" ? <KumbaramTab data={dashboardData} /> : <HisselerimTab data={dashboardData} />}
+        {activeTab === "kumbaras" ? <KumbaramTab data={dashboardData} /> : <HisselerimTab data={dashboardData} showToast={showToast} />}
       </main>
+
+      {/* Global Toast */}
+      {toast && (
+        <div style={{
+          position: "fixed", bottom: 80, left: "50%",
+          transform: "translateX(-50%)",
+          backgroundColor: C.forest,
+          color: "#fff", fontSize: 13, fontWeight: 500,
+          padding: "0.6rem 1.2rem", borderRadius: 99,
+          zIndex: 300, whiteSpace: "nowrap",
+          boxShadow: "0 4px 16px rgba(1,38,25,0.25)",
+        }}>
+          {toast}
+        </div>
+      )}
     </div>
   );
 }

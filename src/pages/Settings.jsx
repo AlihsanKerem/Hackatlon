@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import Navbar from "../components/Navbar";
+import axiosInstance from "../api/axiosInstance";
 
 const C = {
   forest: "#012619",
@@ -26,7 +27,7 @@ const ROUNDING_LABELS = {
   under10:    "10 TL altı işlemlerde geçerli",
   under100:   "10–100 TL arası işlemlerde geçerli",
   under1000:  "100–1.000 TL arası işlemlerde geçerli",
-  under10000: "1.000 TL+ işlemlerde geçerli",
+  under10000: "1.000 TL ve üzeri işlemlerde geçerli",
 };
 
 const TIERS = [
@@ -63,7 +64,7 @@ const TIERS = [
   },
   {
     id: "under10000",
-    label: "1.000 TL+ işlemlerde geçerli",
+    label: "1.000 TL ve üzeri işlemlerde geçerli",
     options: [
       { key: "1",     label: "1 TL",      ex: "1.240 → 1.241 TL",  roundup: "1 TL" },
       { key: "10",    label: "10 TL",     ex: "1.240 → 1.250 TL",  roundup: "10 TL" },
@@ -379,7 +380,7 @@ export default function Settings() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const userId = localStorage.getItem("userId");
+    const userId = localStorage.getItem("userId") || localStorage.getItem("token");
     if (!userId) { navigate("/login"); return; }
 
     const fetchData = async () => {
@@ -395,9 +396,9 @@ export default function Settings() {
           // setRoundingPrefs(userRes.data.preferences);
         }
         
-        if (autoRes.data) {
+        if (autoRes.data && autoRes.data.symbol) {
           setRule({
-            symbol: autoRes.data.stockSymbol,
+            symbol: autoRes.data.symbol,
             threshold: autoRes.data.threshold,
             isActive: autoRes.data.active
           });
@@ -414,7 +415,8 @@ export default function Settings() {
   const showToast = (msg) => { setToast(msg); setTimeout(() => setToast(null), 2500); };
 
   const handleSaveRounding = async (prefs) => {
-    const userId = localStorage.getItem("userId");
+    const token = localStorage.getItem("token");
+    const userId = localStorage.getItem("userId") || token;
     try {
       await axiosInstance.post(`/users/preferences?userId=${userId}`, prefs);
       setRoundingPrefs(prefs);
@@ -423,6 +425,15 @@ export default function Settings() {
     } catch (err) {
       console.error("Save rounding prefs error:", err);
       showToast("Hata oluştu");
+    }
+  };
+
+  const handleSeedData = async () => {
+    try {
+      const res = await axiosInstance.post("/test/seed");
+      showToast(res.data.message || "Demo veriler eklendi");
+    } catch (err) {
+      showToast("Veri eklenemedi");
     }
   };
 
@@ -531,7 +542,7 @@ export default function Settings() {
                       </div>
                       <div>
                         <p style={{ fontSize: 13, fontWeight: 600, color: C.forest, margin: "0 0 1px" }}>{rule.symbol}</p>
-                        <p style={{ fontSize: 11, color: C.forest + "55", margin: 0 }}>Eşik: {rule.threshold} TL</p>
+                        <p style={{ fontSize: 11, color: C.forest + "55", margin: 0 }}>Hisse fiyatına ulaşınca</p>
                       </div>
                     </div>
                     <div style={{ display: "flex", alignItems: "center", gap: 6, backgroundColor: rule.isActive ? C.green + "15" : C.sage + "15", borderRadius: 99, padding: "3px 10px" }}>
@@ -555,6 +566,18 @@ export default function Settings() {
                 Otomasyonu Düzenle
               </button>
             </div>
+          </SectionCard>
+
+          <SectionCard>
+            <SectionHeader
+              title="Demo"
+              icon={
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+                  <path d="M12 2v20M2 12h20" stroke={C.mint} strokeWidth="1.5" strokeLinecap="round"/>
+                </svg>
+              }
+            />
+            <Row label="Demo Veri Ekle" value="Test için örnek işlemler oluştur" onClick={handleSeedData} last />
           </SectionCard>
 
           <SectionCard>

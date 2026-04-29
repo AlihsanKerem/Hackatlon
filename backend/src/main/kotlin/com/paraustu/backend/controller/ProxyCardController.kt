@@ -11,9 +11,14 @@ import java.util.UUID
 class ProxyCardController(private val proxyCardRepository: ProxyCardRepository) {
 
     @GetMapping
-    fun getCards(@RequestHeader("Authorization") token: String): ResponseEntity<Any> {
+    fun getCards(
+        @RequestHeader(value = "Authorization", required = false) token: String?,
+        @RequestParam(value = "userId", required = false) userIdParam: String?
+    ): ResponseEntity<Any> {
         return try {
-            val userId = UUID.fromString(token.replace("Bearer ", ""))
+            val idStr = userIdParam ?: token?.replace("Bearer ", "")
+                ?: throw IllegalArgumentException("Kullanıcı kimliği bulunamadı")
+            val userId = UUID.fromString(idStr)
             val cards = proxyCardRepository.findByUserId(userId)
             ResponseEntity.ok(cards)
         } catch (e: Exception) {
@@ -22,14 +27,57 @@ class ProxyCardController(private val proxyCardRepository: ProxyCardRepository) 
     }
 
     @PostMapping
-    fun addCard(@RequestHeader("Authorization") token: String, @RequestBody request: ProxyCard): ResponseEntity<Any> {
+    fun addCard(
+        @RequestHeader(value = "Authorization", required = false) token: String?,
+        @RequestParam(value = "userId", required = false) userIdParam: String?,
+        @RequestBody request: ProxyCard
+    ): ResponseEntity<Any> {
         return try {
-            val userId = UUID.fromString(token.replace("Bearer ", ""))
+            val idStr = userIdParam ?: token?.replace("Bearer ", "")
+                ?: throw IllegalArgumentException("Kullanıcı kimliği bulunamadı")
+            val userId = UUID.fromString(idStr)
             request.userId = userId
             val savedCard = proxyCardRepository.save(request)
             ResponseEntity.ok(savedCard)
         } catch (e: Exception) {
             ResponseEntity.internalServerError().body(mapOf("error" to "Kart eklenemedi"))
+        }
+    }
+
+    @PostMapping("/{id}/activate")
+    fun activateCard(
+        @PathVariable id: UUID,
+        @RequestHeader(value = "Authorization", required = false) token: String?,
+        @RequestParam(value = "userId", required = false) userIdParam: String?
+    ): ResponseEntity<Any> {
+        return try {
+            val idStr = userIdParam ?: token?.replace("Bearer ", "")
+                ?: throw IllegalArgumentException("Kullanıcı kimliği bulunamadı")
+            val userId = UUID.fromString(idStr)
+            
+            val cards = proxyCardRepository.findByUserId(userId)
+            cards.forEach { card ->
+                card.isActive = (card.cardId == id)
+            }
+            proxyCardRepository.saveAll(cards)
+            
+            ResponseEntity.ok(mapOf("success" to true))
+        } catch (e: Exception) {
+            ResponseEntity.badRequest().body(mapOf("error" to e.message))
+        }
+    }
+
+    @DeleteMapping("/{id}")
+    fun deleteCard(
+        @PathVariable id: UUID,
+        @RequestHeader(value = "Authorization", required = false) token: String?,
+        @RequestParam(value = "userId", required = false) userIdParam: String?
+    ): ResponseEntity<Any> {
+        return try {
+            proxyCardRepository.deleteById(id)
+            ResponseEntity.ok(mapOf("success" to true))
+        } catch (e: Exception) {
+            ResponseEntity.badRequest().body(mapOf("error" to e.message))
         }
     }
 }

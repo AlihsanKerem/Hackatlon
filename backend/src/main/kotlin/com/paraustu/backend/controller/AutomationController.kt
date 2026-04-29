@@ -10,6 +10,31 @@ import java.util.UUID
 @RequestMapping("/api/automation")
 class AutomationController(private val stackAutomationRepository: StackAutomationRepository) {
 
+    @GetMapping
+    fun getAutomation(
+        @RequestHeader(value = "Authorization", required = false) token: String?,
+        @RequestParam(value = "userId", required = false) userIdParam: String?
+    ): ResponseEntity<Any> {
+        return try {
+            val idStr = userIdParam ?: token?.replace("Bearer ", "")
+                ?: throw IllegalArgumentException("Kullanıcı kimliği bulunamadı")
+            val userId = UUID.fromString(idStr)
+            val automation = stackAutomationRepository.findByUserId(userId)
+            
+            if (automation != null) {
+                ResponseEntity.ok(mapOf(
+                    "active" to automation.isEnabled,
+                    "symbol" to automation.targetStock,
+                    "threshold" to automation.thresholdAmount
+                ))
+            } else {
+                ResponseEntity.ok(mapOf("active" to false))
+            }
+        } catch (e: Exception) {
+            ResponseEntity.badRequest().body(mapOf("error" to e.message))
+        }
+    }
+
     @PostMapping("/save")
     fun saveAutomation(
         @RequestHeader("Authorization") token: String,

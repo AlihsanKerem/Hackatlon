@@ -17,7 +17,7 @@ const inputStyle = (focused) => ({
 export default function Login() {
   const { login, isAuthenticated } = useAuth();
   const navigate = useNavigate();
-  const [email, setEmail]       = useState("");
+  const [tcKimlik, setTcKimlik]       = useState("");
   const [password, setPassword] = useState("");
   const [focused, setFocused]   = useState(null);
   const [loading, setLoading]   = useState(false);
@@ -28,13 +28,13 @@ export default function Login() {
 
   const handleLogin = async () => {
     setError("");
-    if (!email || !password) { setError("Lütfen tüm alanları doldurun."); return; }
+    if (!tcKimlik || !password) { setError("Lütfen tüm alanları doldurun."); return; }
     setLoading(true);
     try {
       const res = await fetch('/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: email.trim(), pin: password.trim() })
+        body: JSON.stringify({ tcKimlik: tcKimlik.trim(), pin: password.trim() })
       });
       
       const data = await res.json();
@@ -42,7 +42,7 @@ export default function Login() {
         throw new Error(data.error || "Giriş başarısız oldu.");
       }
       
-      login(data.token);
+      login(data.token, data.id);
       navigate("/dashboard", { replace: true });
     } catch (err) {
       setError(err.message);
@@ -87,11 +87,12 @@ export default function Login() {
             )}
 
             <div>
-              <label style={{ display:"block", fontSize:13, fontWeight:500, color:C.forest, marginBottom:6 }}>E-posta</label>
-              <input type="email" value={email} onChange={e => setEmail(e.target.value)}
-                onFocus={() => setFocused("email")} onBlur={() => setFocused(null)}
+              <label style={{ display: "block", fontSize: 13, fontWeight: 500, color: C.forest, marginBottom: 6 }}>TC Kimlik Numarası</label>
+              <input type="text" value={tcKimlik} onChange={e => setTcKimlik(e.target.value.replace(/\D/g, ""))}
+                onFocus={() => setFocused("tcKimlik")} onBlur={() => setFocused(null)}
                 onKeyDown={e => e.key === "Enter" && handleLogin()}
-                placeholder="ornek@email.com" style={inputStyle(focused === "email")}/>
+                maxLength={11}
+                placeholder="11 Haneli TC No" style={inputStyle(focused === "tcKimlik")}/>
             </div>
 
             <div>

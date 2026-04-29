@@ -11,8 +11,8 @@ import Dashboard      from "./pages/Dashboard";
 import Cards          from "./pages/Cards";
 import Automation     from "./pages/Automation";
 import Settings       from "./pages/Settings";
-import Payment        from "./pages/Payment";
 import Checkout       from "./pages/Checkout";
+import Transactions   from "./pages/Transactions";
 
 export default function App() {
   return (
@@ -30,9 +30,9 @@ export default function App() {
               <Route path="/cards"      element={<Cards />} />
               <Route path="/automation" element={<Automation />} />
               <Route path="/settings"   element={<Settings />} />
+              <Route path="/transactions" element={<Transactions />} />
             </Route>
             {/* Ödeme sayfaları — BottomNav olmadan */}
-            <Route path="/pay"        element={<Payment />} />
             <Route path="/checkout"   element={<Checkout />} />
             <Route path="/onboarding" element={<RoundingSplash />} />
           </Route>

@@ -14,6 +14,15 @@ class User {
     var fullName: String? = null
     
     @Column(unique = true)
+    @Convert(converter = com.paraustu.backend.security.CryptoConverter::class)
+    var tcKimlik: String? = null
+    
+    @Convert(converter = com.paraustu.backend.security.CryptoConverter::class)
+    var pin: String? = null
+    
+    var roundingPreference: String = "NEAREST_10"
+    
+    @Column(unique = true)
     var email: String? = null
     
     var passwordHash: String? = null

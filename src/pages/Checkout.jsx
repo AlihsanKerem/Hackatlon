@@ -107,7 +107,7 @@ export default function Checkout() {
     const { roundup } = getRoundup(amount, user?.roundingPreference);
     // Tutarı roundup ile birlikte gönderiyoruz ki simülasyonda doğru görünsün
     const finalAmount = amount; 
-    window.location.href = `http://localhost:5173/simulation/sonuc.html?status=${status}&amount=${finalAmount}&merchant=${encodeURIComponent(merchant)}`;
+    window.location.href = `/simulation/sonuc.html?status=${status}&amount=${finalAmount}&merchant=${encodeURIComponent(merchant)}`;
   };
 
   if (!activeCard) {

@@ -39,7 +39,7 @@ class DashboardService(
                     
                     if (availableBalance >= stockPrice) {
                         println("--- OTOMASYON TETIKLENDI: $symbol ALINIYOR ---")
-                        val qtyToBuy = availableBalance.divide(stockPrice, 4, java.math.RoundingMode.DOWN)
+                        val qtyToBuy = availableBalance.divide(stockPrice, 0, java.math.RoundingMode.DOWN)
                         
                         portfolioService.buyStock(userIdStr, BuyRequest(
                             symbol = symbol,
@@ -76,9 +76,9 @@ class DashboardService(
                 TransactionDto(
                     id = it.transactionId.toString(),
                     date = it.processedAt.format(formatter),
-                    merchant = it.address ?: "Bilinmeyen",
-                    amount = it.spentAmount ?: BigDecimal.ZERO,
-                    roundup = it.roundUpAmount ?: BigDecimal.ZERO
+                    merchant = it.merchantName ?: it.address ?: "Bilinmeyen",
+                    amount = it.amountSpent ?: BigDecimal.ZERO,
+                    roundup = it.roundupAmount ?: BigDecimal.ZERO
                 )
             },
             portfolio = portfolio.groupBy { it.assetSymbol }.map { (symbol, items) ->

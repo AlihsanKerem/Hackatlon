@@ -37,4 +37,18 @@ class PortfolioController(private val portfolioService: PortfolioService) {
             ResponseEntity.badRequest().body(mapOf("success" to false, "message" to e.message))
         }
     }
+
+    @GetMapping
+    fun getPortfolio(
+        @RequestHeader(value = "Authorization", required = false) token: String?,
+        @RequestParam(value = "userId", required = false) userIdParam: String?
+    ): ResponseEntity<Any> {
+        return try {
+            val idStr = userIdParam ?: token?.replace("Bearer ", "")
+                ?: throw IllegalArgumentException("Kullanıcı kimliği bulunamadı")
+            ResponseEntity.ok(emptyList<Any>())
+        } catch (e: Exception) {
+            ResponseEntity.status(401).body(mapOf("error" to "Yetkisiz erişim"))
+        }
+    }
 }

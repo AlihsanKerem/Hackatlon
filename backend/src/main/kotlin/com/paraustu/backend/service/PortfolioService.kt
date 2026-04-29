@@ -85,12 +85,7 @@ class PortfolioService(
             portfolioRepository.save(existingPortfolio)
         }
 
-        // Satıştan gelen para kumbaraya eklenebilir veya vadesiz hesaba gider
-        // Demo için kumbaraya ekleyelim:
-        val balance = balanceRepository.findByUserId(userId)
-        if (balance != null) {
-            balance.totalBalance = balance.totalBalance!!.add(price.multiply(request.qty))
-            balanceRepository.save(balance)
-        }
+        // Satıştan gelen para banka hesabına (vadesiz hesaba) aktarılır.
+        // Kumbaraya (roundup balance) eklenmez.
     }
 }

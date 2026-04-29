@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import Navbar from "../components/Navbar";
 import axiosInstance from "../api/axiosInstance";
 
@@ -86,7 +86,7 @@ function ActiveRuleCard({ rule, stocks, onToggle, onDelete }) {
         borderRadius: 8, padding: "0.6rem 0.8rem", marginBottom: "0.75rem",
       }}>
         <p style={{ fontSize: 13, color: rule.isActive ? C.mint : C.forest + "70", margin: 0 }}>
-          Biriken para üstü <strong style={{ color: rule.isActive ? "#fff" : C.forest }}>{rule.threshold} TL</strong>'ye ulaşınca otomatik satın al
+          Biriken para üstü <strong style={{ color: rule.isActive ? "#fff" : C.forest }}>hisse fiyatına</strong> ulaşınca otomatik satın al
         </p>
       </div>
 
@@ -117,7 +117,6 @@ function ActiveRuleCard({ rule, stocks, onToggle, onDelete }) {
 }
 
 function BottomSheet({ stock, existingRule, onSave, onClose }) {
-  const [threshold, setThreshold] = useState(existingRule ? String(existingRule.threshold) : "100");
   const [showConfirm, setShowConfirm] = useState(false);
   const [saving, setSaving] = useState(false);
 
@@ -133,7 +132,8 @@ function BottomSheet({ stock, existingRule, onSave, onClose }) {
     setSaving(true);
     await new Promise(r => setTimeout(r, 700));
     setSaving(false);
-    onSave({ symbol: stock.symbol, threshold: Number(threshold) });
+    // Artık eşik değeri hisse fiyatına eşit
+    onSave({ symbol: stock.symbol, threshold: stock.price });
   };
 
   return (
@@ -177,33 +177,12 @@ function BottomSheet({ stock, existingRule, onSave, onClose }) {
           </div>
         </div>
 
-        <div style={{ marginBottom: "1rem" }}>
-          <label style={{ fontSize: 12, fontWeight: 500, color: C.forest + "80", display: "block", marginBottom: 6 }}>
-            Eşik tutarı (TL)
-          </label>
-          <div style={{ position: "relative" }}>
-            <input
-              type="number"
-              value={threshold}
-              onChange={e => setThreshold(e.target.value)}
-              min="1"
-              style={{
-                width: "100%", boxSizing: "border-box",
-                padding: "0.65rem 2.5rem 0.65rem 0.9rem",
-                border: `1.5px solid ${C.sage}`,
-                borderRadius: 8, fontSize: 15, fontWeight: 600,
-                color: C.forest, outline: "none", fontFamily: "inherit",
-                backgroundColor: "#fff",
-              }}
-            />
-            <span style={{
-              position: "absolute", right: 12, top: "50%",
-              transform: "translateY(-50%)",
-              fontSize: 13, color: C.forest + "50", fontWeight: 500,
-            }}>₺</span>
-          </div>
-          <p style={{ fontSize: 12, color: C.forest + "55", margin: "6px 0 0", lineHeight: 1.5 }}>
-            Biriken para üstü bu tutara ulaştığında 1 adet {stock.symbol} otomatik alınır.
+        <div style={{ marginBottom: "1rem", backgroundColor: C.mint + "10", padding: "1rem", borderRadius: 10, border: `1px solid ${C.mint}30` }}>
+          <p style={{ fontSize: 13, color: C.forest, margin: "0 0 4px", fontWeight: 600 }}>
+            Otomatik Alım Prensibi
+          </p>
+          <p style={{ fontSize: 12, color: C.forest + "70", margin: 0, lineHeight: 1.5 }}>
+            Biriken para üstün <strong>{fmt(stock.price)} ₺</strong> (güncel hisse fiyatı) tutarına ulaştığında 1 adet {stock.symbol} otomatik olarak alınır. Ek bir eşik belirlemenize gerek yoktur.
           </p>
         </div>
 
@@ -237,10 +216,10 @@ function BottomSheet({ stock, existingRule, onSave, onClose }) {
         ) : (
           <button
             onClick={handleSave}
-            disabled={saving || !threshold || Number(threshold) <= 0}
+            disabled={saving}
             style={{
               width: "100%", padding: "0.75rem",
-              backgroundColor: saving || !threshold ? C.sage : C.green,
+              backgroundColor: saving ? C.sage : C.green,
               color: "#fff", border: "none", borderRadius: 9,
               fontSize: 15, fontWeight: 600,
               cursor: saving ? "not-allowed" : "pointer",
@@ -263,13 +242,14 @@ export default function Automation() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const userId = localStorage.getItem("userId");
+    const userId = localStorage.getItem("userId") || localStorage.getItem("token");
+    if (!userId) return;
     const fetchRule = async () => {
       try {
         const res = await axiosInstance.get(`/automation?userId=${userId}`);
-        if (res.data) {
+        if (res.data && res.data.symbol) {
           setActiveRule({
-            symbol: res.data.stockSymbol,
+            symbol: res.data.symbol,
             threshold: res.data.threshold,
             isActive: res.data.active
           });
@@ -303,7 +283,7 @@ export default function Automation() {
     try {
       await axiosInstance.post(`/automation/save?userId=${userId}`, {
         active: true,
-        stockSymbol: symbol,
+        symbol: symbol,
         threshold: threshold
       });
       setActiveRule({ symbol, threshold, isActive: true });
@@ -321,7 +301,7 @@ export default function Automation() {
     try {
       await axiosInstance.post(`/automation/save?userId=${userId}`, {
         active: newState,
-        stockSymbol: activeRule.symbol,
+        symbol: activeRule.symbol,
         threshold: activeRule.threshold,
       });
       setActiveRule(r => ({ ...r, isActive: newState }));

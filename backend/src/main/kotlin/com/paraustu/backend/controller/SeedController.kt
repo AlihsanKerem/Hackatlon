@@ -40,7 +40,7 @@ class SeedController(
                     this.userId = userId
                     this.bankName = "Akbank"
                     this.cardNumber = "1234567812345678"
-                    this.cardDate = "08/27"
+                    this.expiryDate = "08/27"
                     this.cardCvv = "123"
                     this.isActive = true
                 }
@@ -61,9 +61,9 @@ class SeedController(
             val randomChoice = merchants.random()
             val tx = Transaction().apply {
                 this.userId = userId
-                this.address = randomChoice.first
-                this.spentAmount = randomChoice.second.first
-                this.roundUpAmount = randomChoice.second.second
+                this.merchantName = randomChoice.first
+                this.amountSpent = randomChoice.second.first
+                this.roundupAmount = randomChoice.second.second
                 this.processedAt = LocalDateTime.now()
             }
             transactionRepository.save(tx)

@@ -17,11 +17,16 @@ class Transaction {
     @Column(name = "proxy_card_id")
     var proxyCardId: UUID? = null // proxy_cards tablosundaki cardId
     
-    @Column(precision = 10, scale = 2)
-    var spentAmount: BigDecimal? = null
+    var merchantName: String? = null
     
     @Column(precision = 10, scale = 2)
-    var roundUpAmount: BigDecimal? = null
+    var amountSpent: BigDecimal? = null
+    
+    @Column(precision = 10, scale = 2)
+    var amountRounded: BigDecimal? = null
+
+    @Column(precision = 10, scale = 2)
+    var roundupAmount: BigDecimal? = null
     
     var address: String? = null
     var processedAt: LocalDateTime = LocalDateTime.now()

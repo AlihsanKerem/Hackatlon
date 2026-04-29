@@ -183,7 +183,7 @@ export default function Register() {
   const navigate = useNavigate();
   const { login } = useAuth();
   const [step, setStep] = useState("form"); // form | otp | success
-  const [form, setForm] = useState({ fullName: "", email: "", phone: "", pin: "", pinConfirm: "" });
+  const [form, setForm] = useState({ fullName: "", tcKimlik: "", email: "", phone: "", pin: "", pinConfirm: "" });
   const [focused, setFocused] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -203,6 +203,7 @@ export default function Register() {
 
   const validate = () => {
     if (!form.fullName.trim()) return "Ad soyad zorunludur.";
+    if (!form.tcKimlik.trim() || form.tcKimlik.length !== 11) return "Geçerli bir TC Kimlik numarası girin.";
     if (!form.email.trim() || !/\S+@\S+\.\S+/.test(form.email)) return "Geçerli bir e-posta girin.";
     if (rawPhone.length !== 10) return "Geçerli bir telefon numarası girin.";
     if (form.pin.length !== 6) return "PIN 6 haneli olmalıdır.";
@@ -220,6 +221,7 @@ export default function Register() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
+          tcKimlik: form.tcKimlik.trim(),
           fullName: form.fullName.trim(),
           email: form.email.trim(),
           phone: rawPhone.trim(),
@@ -233,6 +235,7 @@ export default function Register() {
       }
       
       localStorage.setItem("temp_auth_token", data.token);
+      localStorage.setItem("temp_auth_userId", data.id);
       setStep("otp");
     } catch(e) {
       setError(e.message);
@@ -247,8 +250,10 @@ export default function Register() {
     if (step === "success") {
       const timer = setTimeout(() => {
         const token = localStorage.getItem("temp_auth_token") || "mock-token-fallback";
-        login(token);
+        const userId = localStorage.getItem("temp_auth_userId") || token;
+        login(token, userId);
         localStorage.removeItem("temp_auth_token");
+        localStorage.removeItem("temp_auth_userId");
         navigate("/dashboard", { replace: true });
       }, 2000);
       return () => clearTimeout(timer);
@@ -319,6 +324,16 @@ export default function Register() {
                   {error}
                 </div>
               )}
+
+              {/* TC Kimlik */}
+              <div>
+                <label style={{ display: "block", fontSize: 13, fontWeight: 500, color: C.forest, marginBottom: 5 }}>TC Kimlik Numarası</label>
+                <input type="text" value={form.tcKimlik}
+                  maxLength={11}
+                  onChange={e => set("tcKimlik", e.target.value.replace(/\D/g, ""))}
+                  onFocus={() => setFocused("tcKimlik")} onBlur={() => setFocused(null)}
+                  placeholder="11 Haneli TC No" style={inputStyle(focused === "tcKimlik")} />
+              </div>
 
               {/* Ad Soyad */}
               <div>

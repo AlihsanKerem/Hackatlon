@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import { useAuth } from "../context/AuthContext";
+import axiosInstance from "../api/axiosInstance";
 
 const C = {
   forest: "#012619",
@@ -22,15 +23,10 @@ export default function Transactions() {
 
   useEffect(() => {
     if (token) {
-      fetch('/api/dashboard', {
-        headers: { 'Authorization': `Bearer ${token}` }
-      })
+      const userId = localStorage.getItem("userId") || token;
+      axiosInstance.get(`/dashboard?userId=${userId}`)
       .then(res => {
-        if (!res.ok) { logout(); throw new Error("Oturum hatası"); }
-        return res.json();
-      })
-      .then(data => {
-        setTransactions(data.transactions || []);
+        setTransactions(res.data.transactions || []);
         setLoading(false);
       })
       .catch(err => {

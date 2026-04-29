@@ -16,8 +16,11 @@ class AuthService(
     fun register(request: RegisterRequest): AuthResponse {
         val email = request.email.trim()
         val phone = request.phone.trim()
-        val pin = request.pin.trim()
+        val tcKimlik = request.tcKimlik.trim()
 
+        if (userRepository.existsByTcKimlik(tcKimlik)) {
+            throw IllegalArgumentException("Bu TC Kimlik numarası zaten kullanımda.")
+        }
         if (userRepository.existsByEmail(email)) {
             throw IllegalArgumentException("Bu e-posta adresi zaten kullanımda.")
         }
@@ -26,34 +29,42 @@ class AuthService(
         }
 
         val user = User().apply {
+            this.tcKimlik = request.tcKimlik
             this.fullName = request.fullName
             this.email = request.email
             this.phone = request.phone
-            this.passwordHash = passwordUtils.hashPassword(request.pin)
+            this.pin = request.pin // Pin'i şifreli saklıyoruz (CryptoConverter ile)
+            this.passwordHash = passwordUtils.hashPassword(request.pin) // Geriye dönük uyumluluk
+            this.roundingPreference = "NEAREST_10"
         }
 
         val savedUser = userRepository.save(user)
         
         return AuthResponse(
             token = savedUser.id.toString(),
-            message = "Kayıt başarılı."
+            id = savedUser.id.toString(),
+            message = "Kayıt başarılı.",
+            roundingPreference = savedUser.roundingPreference
         )
     }
 
     fun login(request: com.paraustu.backend.dto.LoginRequest): AuthResponse {
-        val email = request.email.trim()
-        val pin = request.pin.trim()
+        val tcKimlik = request.tcKimlik.trim()
+        val pinInput = request.pin.trim()
 
-        val user = userRepository.findByEmail(email)
-            ?: throw IllegalArgumentException("E-posta veya şifre hatalı.")
+        val user = userRepository.findByTcKimlik(tcKimlik)
+            ?: throw IllegalArgumentException("TC Kimlik veya PIN hatalı.")
 
-        if (!passwordUtils.checkPassword(request.pin, user.passwordHash ?: "")) {
-            throw IllegalArgumentException("E-posta veya şifre hatalı.")
+        // Hem düz PIN karşılaştırması (CryptoConverter ile) hem de hash kontrolü yapabiliriz
+        if (user.pin != pinInput && !passwordUtils.checkPassword(pinInput, user.passwordHash ?: "")) {
+            throw IllegalArgumentException("TC Kimlik veya PIN hatalı.")
         }
 
         return AuthResponse(
             token = user.id.toString(),
-            message = "Giriş başarılı."
+            id = user.id.toString(),
+            message = "Giriş başarılı.",
+            roundingPreference = user.roundingPreference
         )
     }
 
@@ -66,7 +77,8 @@ class AuthService(
             fullName = user.fullName ?: "İsimsiz",
             email = user.email ?: "",
             phone = user.phone ?: "",
-            roundupBalance = 0.0
+            roundupBalance = 0.0,
+            roundingPreference = user.roundingPreference
         )
     }
 }
