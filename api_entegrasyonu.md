@@ -9,10 +9,10 @@ Bu rehber, frontend üzerindeki butonların backend'deki hangi endpoint'lere ba�
 
 | İşlem | Metot | Endpoint | Request Body |
 | :--- | :--- | :--- | :--- |
-| Giriş Yap | `POST` | `/api/auth/login` | `{ "email": "...", "password": "..." }` |
-| Kayıt Ol | `POST` | `/api/auth/register` | `{ "email": "...", "password": "...", "phone": "..." }` |
+| Giriş Yap | `POST` | `/api/auth/login` | `{ "tcKimlik": "...", "pin": "..." }` |
+| Kayıt Ol | `POST` | `/api/auth/register` | `{ "tcKimlik": "...", "fullName": "...", "email": "...", "phone": "...", "pin": "..." }` |
 
-**Not:** Login başarılı olduğunda backend'in mutlaka `id` ve `roundingPreference` alanlarını dönmesi gerekir.
+**Not:** Login başarılı olduğunda backend'in mutlaka `id`, `token` ve `roundingPreference` alanlarını dönmesi gerekir.
 
 ---
 
@@ -33,8 +33,9 @@ Bu rehber, frontend üzerindeki butonların backend'deki hangi endpoint'lere ba�
 | İşlem | Metot | Endpoint | Açıklama |
 | :--- | :--- | :--- | :--- |
 | Kartları Listele | `GET` | `/api/cards?userId=...` | Kullanıcının bağlı tüm kartlarını getirir. |
-| Yeni Kart Üret | `POST` | `/api/cards/generate` | Query Params: `userId` & `bankName`. Sahte kart no üretir. |
-| Kartı Aktifleştir | `PUT` | `/api/cards/{id}/activate` | Seçilen kartı `isActive=true` yapar, diğerlerini `false`. |
+| Yeni Kart Ekle | `POST` | `/api/cards?userId=...` | Request Body: `{ "bankName": "...", "cardNumber": "...", "expiryDate": "...", "maskedNumber": "...", "isActive": true }` |
+| Kartı Aktifleştir | `POST` | `/api/cards/{id}/activate?userId=...` | Seçilen kartı `isActive=true` yapar, diğerlerini `false`. |
+| Kartı Sil | `DELETE` | `/api/cards/{id}?userId=...` | Mevcut kartı siler. |
 
 ---
 
@@ -50,7 +51,7 @@ Bu sistemin en kritik noktasıdır. Kullanıcı "Ödemeyi Onayla" dediğinde şu
 {
   "userId": "UUID",
   "cardId": "UUID",
-  "merchantName": "KitapDünyası",
+  "merchantName": "Zamazor",
   "amountSpent": 149.90,
   "amountRounded": 150.00,
   "roundupAmount": 0.10
@@ -65,17 +66,17 @@ Bu sistemin en kritik noktasıdır. Kullanıcı "Ödemeyi Onayla" dediğinde şu
 
 | İşlem | Metot | Endpoint | Request Body |
 | :--- | :--- | :--- | :--- |
-| Kural Sorgula | `GET` | `/api/automation/rule?userId=...` | Aktif bir kural var mı kontrol eder. |
-| Kural Kur | `POST` | `/api/automation/rule` | `{ "userId": "...", "stockSymbol": "THYAO.IS", "threshold": 100 }` |
-| Kural İptal | `DELETE` | `/api/automation/rule?userId=...` | Mevcut otomasyonu siler. |
+| Kural Sorgula | `GET` | `/api/automation?userId=...` | Aktif bir kural var mı kontrol eder. |
+| Kural Kaydet/Güncelle | `POST` | `/api/automation/save?userId=...` | `{ "active": true, "stockSymbol": "THYAO.IS", "threshold": 100 }` |
+| Kural Sil | `DELETE` | `/api/automation?userId=...` | Mevcut otomasyonu siler. |
 
 ---
 
 ## 💡 Database Arkadaşlara Notlar (Seed Data)
 Backend ilk çalıştığında şu verilerin hazır olması frontend testlerini çok kolaylaştırır:
-1.  `users` tablosunda `test@paraustu.com` kullanıcısı.
+1.  `users` tablosunda `12345678901` TC numaralı ve `123456` PIN kodlu test kullanıcısı.
 2.  `cards` tablosunda bu kullanıcıya ait biri aktif 2 kart.
-3.  `roundup_pool` tablosunda kullanıcıya ait 0.00 (veya örnek 47.30) bakiye satırı.
+3.  `roundup_pool` (veya ilgili tablo) içerisinde kullanıcıya ait başlangıç bakiyesi.
 
 ---
 

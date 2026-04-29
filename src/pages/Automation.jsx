@@ -1,5 +1,6 @@
 import { useState, useMemo } from "react";
 import Navbar from "../components/Navbar";
+import axiosInstance from "../api/axiosInstance";
 
 const C = {
   forest: "#012619",
@@ -256,9 +257,31 @@ function BottomSheet({ stock, existingRule, onSave, onClose }) {
 
 export default function Automation() {
   const [query, setQuery] = useState("");
-  const [activeRule, setActiveRule] = useState(MOCK_ACTIVE_RULE);
+  const [activeRule, setActiveRule] = useState(null);
   const [selectedStock, setSelectedStock] = useState(null);
   const [toast, setToast] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const userId = localStorage.getItem("userId");
+    const fetchRule = async () => {
+      try {
+        const res = await axiosInstance.get(`/automation?userId=${userId}`);
+        if (res.data) {
+          setActiveRule({
+            symbol: res.data.stockSymbol,
+            threshold: res.data.threshold,
+            isActive: res.data.active
+          });
+        }
+      } catch (err) {
+        console.error("Fetch automation rule error:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchRule();
+  }, []);
 
   const showToast = (msg) => {
     setToast(msg);
@@ -275,20 +298,48 @@ export default function Automation() {
     );
   }, [query]);
 
-  const handleSave = ({ symbol, threshold }) => {
-    setActiveRule({ symbol, threshold, isActive: true });
-    setSelectedStock(null);
-    showToast("Otomasyon kuralı kaydedildi");
+  const handleSave = async ({ symbol, threshold }) => {
+    const userId = localStorage.getItem("userId");
+    try {
+      await axiosInstance.post(`/automation/save?userId=${userId}`, {
+        active: true,
+        stockSymbol: symbol,
+        threshold: threshold
+      });
+      setActiveRule({ symbol, threshold, isActive: true });
+      setSelectedStock(null);
+      showToast("Otomasyon kuralı kaydedildi");
+    } catch (err) {
+      console.error("Save automation rule error:", err);
+      showToast("Hata oluştu");
+    }
   };
 
-  const handleToggle = () => {
-    setActiveRule(r => ({ ...r, isActive: !r.isActive }));
-    showToast(activeRule.isActive ? "Otomasyon duraklatıldı" : "Otomasyon aktif edildi");
+  const handleToggle = async () => {
+    const newState = !activeRule.isActive;
+    const userId = localStorage.getItem("userId");
+    try {
+      await axiosInstance.post(`/automation/save?userId=${userId}`, {
+        active: newState,
+        stockSymbol: activeRule.symbol,
+        threshold: activeRule.threshold,
+      });
+      setActiveRule(r => ({ ...r, isActive: newState }));
+      showToast(newState ? "Otomasyon aktif edildi" : "Otomasyon duraklatıldı");
+    } catch (err) {
+      console.error("Toggle automation error:", err);
+    }
   };
 
-  const handleDelete = () => {
-    setActiveRule(null);
-    showToast("Kural silindi");
+  const handleDelete = async () => {
+    const userId = localStorage.getItem("userId");
+    try {
+      await axiosInstance.delete(`/automation?userId=${userId}`);
+      setActiveRule(null);
+      showToast("Kural silindi");
+    } catch (err) {
+      console.error("Delete automation error:", err);
+    }
   };
 
   return (

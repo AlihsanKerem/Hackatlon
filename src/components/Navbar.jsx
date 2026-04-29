@@ -32,11 +32,7 @@ export default function Navbar({ title, showBack = false }) {
         </button>
       )}
       <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-          <circle cx="12" cy="12" r="9.5" stroke={C.sage} strokeWidth="1.2"/>
-          <path d="M9.5 9.5C9.5 8.67 10.17 8 11 8h2c.83 0 1.5.67 1.5 1.5S13.83 11 13 11h-2c-.83 0-1.5.67-1.5 1.5S10.17 14 11 14h2c.83 0 1.5-.67 1.5-1.5" stroke={C.green} strokeWidth="1.6" strokeLinecap="round"/>
-          <path d="M12 6v2M12 16v2" stroke={C.mint} strokeWidth="1.6" strokeLinecap="round"/>
-        </svg>
+        <img src="/logo.png" alt="ParaÜstü" style={{ width: 28, height: 28, objectFit: "contain" }} />
         <span style={{ color: C.cream, fontWeight: 600, fontSize: 15 }}>ParaÜstü</span>
       </div>
       {title && (

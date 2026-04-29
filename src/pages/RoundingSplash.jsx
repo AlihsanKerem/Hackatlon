@@ -12,29 +12,29 @@ const C = {
 const TIERS = [
   {
     id: "under10",
-    label: "10 TL altı işlemler",
+    label: "10 TL altı işlemlerde geçerli",
     example: "Kahve, su, ulaşım",
     options: [
-      { key: "1",  label: "1 TL",  ex: "7,40 → 8 TL",   roundup: "0,60 TL" },
-      { key: "5",  label: "5 TL",  ex: "7,40 → 10 TL",  roundup: "2,60 TL" },
-      { key: "10", label: "10 TL", ex: "7,40 → 10 TL",  roundup: "2,60 TL" },
+      { key: "1",  label: "1 TL",  ex: "3,40 → 4 TL",   roundup: "0,60 TL" },
+      { key: "5",  label: "5 TL",  ex: "3,40 → 5 TL",   roundup: "1,60 TL" },
+      { key: "10", label: "10 TL", ex: "3,40 → 10 TL",  roundup: "6,60 TL" },
     ],
   },
   {
     id: "under100",
-    label: "10–100 TL arası işlemler",
+    label: "10–100 TL arası işlemlerde geçerli",
     example: "Market, yemek, kitap",
     options: [
-      { key: "1",   label: "1 TL",   ex: "47,20 → 48 TL",  roundup: "0,80 TL" },
-      { key: "5",   label: "5 TL",   ex: "47,20 → 50 TL",  roundup: "2,80 TL" },
-      { key: "10",  label: "10 TL",  ex: "47,20 → 50 TL",  roundup: "2,80 TL" },
-      { key: "50",  label: "50 TL",  ex: "47,20 → 50 TL",  roundup: "2,80 TL" },
-      { key: "100", label: "100 TL", ex: "47,20 → 100 TL", roundup: "52,80 TL" },
+      { key: "1",   label: "1 TL",   ex: "43,20 → 44 TL",  roundup: "0,80 TL" },
+      { key: "5",   label: "5 TL",   ex: "43,20 → 45 TL",  roundup: "1,80 TL" },
+      { key: "10",  label: "10 TL",  ex: "43,20 → 50 TL",  roundup: "6,80 TL" },
+      { key: "50",  label: "50 TL",  ex: "43,20 → 50 TL",  roundup: "6,80 TL" },
+      { key: "100", label: "100 TL", ex: "43,20 → 100 TL", roundup: "56,80 TL" },
     ],
   },
   {
     id: "under1000",
-    label: "100–1.000 TL arası işlemler",
+    label: "100–1.000 TL arası işlemlerde geçerli",
     example: "Fatura, giysi, restoran",
     options: [
       { key: "1",    label: "1 TL",    ex: "320 → 321 TL",    roundup: "1 TL" },
@@ -46,7 +46,7 @@ const TIERS = [
   },
   {
     id: "under10000",
-    label: "1.000 TL+ işlemler",
+    label: "1.000 TL+ işlemlerde geçerli",
     example: "Elektronik, kira, tatil",
     options: [
       { key: "1",     label: "1 TL",      ex: "1.240 → 1.241 TL",  roundup: "1 TL" },

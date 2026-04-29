@@ -30,9 +30,10 @@ export default function App() {
               <Route path="/cards"      element={<Cards />} />
               <Route path="/automation" element={<Automation />} />
               <Route path="/settings"   element={<Settings />} />
-              <Route path="/pay"        element={<Payment />} />
-              <Route path="/checkout"   element={<Checkout />} />
             </Route>
+            {/* Ödeme sayfaları — BottomNav olmadan */}
+            <Route path="/pay"        element={<Payment />} />
+            <Route path="/checkout"   element={<Checkout />} />
             <Route path="/onboarding" element={<RoundingSplash />} />
           </Route>
 

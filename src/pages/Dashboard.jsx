@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import axiosInstance from "../api/axiosInstance";
@@ -31,6 +31,8 @@ function calcPortfolio(stocks) {
 
 
 function KumbaramTab({ pool, transactions }) {
+  const [showAll, setShowAll] = React.useState(false);
+  const displayed = showAll ? transactions : transactions.slice(0, 5);
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
       {/* Bakiye kartı */}
@@ -44,7 +46,7 @@ function KumbaramTab({ pool, transactions }) {
           Biriken Para Üstü
         </p>
         <p style={{ color: "#fff", fontSize: 40, fontWeight: 700, margin: "0 0 4px", letterSpacing: "-0.02em" }}>
-          {fmt(pool?.balance)} ₺
+          {fmt(pool?.roundupBalance ?? pool?.balance)} ₺
         </p>
         <div style={{
           display: "inline-flex", alignItems: "center", gap: 6,
@@ -74,19 +76,24 @@ function KumbaramTab({ pool, transactions }) {
           display: "flex", justifyContent: "space-between", alignItems: "center",
         }}>
           <span style={{ fontSize: 14, fontWeight: 600, color: C.forest }}>Son İşlemler</span>
-          <span style={{ fontSize: 12, color: C.green, fontWeight: 500, cursor: "pointer" }}>Tümünü gör →</span>
+          <span
+            style={{ fontSize: 12, color: C.green, fontWeight: 500, cursor: "pointer" }}
+            onClick={() => setShowAll(v => !v)}
+          >
+            {showAll ? "Daha az gör" : "Tümünü gör →"}
+          </span>
         </div>
 
         {transactions.length === 0 && <p style={{ padding: 20, textAlign: "center", color: "#888" }}>Henüz işlem yok.</p>}
 
-        {transactions.map((tx, i) => (
+        {displayed.map((tx, i) => (
           <div
             key={tx.id}
             style={{
               display: "flex",
               alignItems: "center",
               padding: "0.75rem 1rem",
-              borderBottom: i < transactions.length - 1 ? `1px solid ${C.sage}40` : "none",
+              borderBottom: i < displayed.length - 1 ? `1px solid ${C.sage}40` : "none",
             }}
           >
             <div style={{
@@ -269,7 +276,7 @@ export default function Dashboard() {
         {/* Selamlama */}
         <div style={{ marginBottom: "1.25rem" }}>
           <h1 style={{ fontSize: 20, fontWeight: 700, color: C.forest, margin: "0 0 3px" }}>
-            Merhaba 👋
+            Merhaba
           </h1>
           <p style={{ fontSize: 13, color: C.forest + "60", margin: 0 }}>
             {new Date().toLocaleDateString("tr-TR", { weekday: "long", day: "numeric", month: "long" })}

@@ -3,62 +3,63 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ödeme - KitapDünyası</title>
+    <title>Ödeme - Zamazor</title>
     <style>
-        :root {
-            --forest: #012619;
-            --green: #4EA664;
-            --mint: #78BF9E;
-            --sage: #A9D9C2;
-            --cream: #E8E5DE;
-        }
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #f4f4f4;
+            font-family: Arial, 'Helvetica Neue', sans-serif;
+            background-color: #EAEDED;
         }
         header {
-            background-color: var(--forest);
+            background-color: #131921;
             color: white;
-            padding: 1rem 2rem;
+            padding: 0.75rem 1.5rem;
             display: flex;
             align-items: center;
             gap: 1rem;
         }
+        .logo {
+            font-size: 1.4rem;
+            font-weight: 900;
+            color: #FF9900;
+            cursor: pointer;
+            letter-spacing: -0.5px;
+        }
+        .logo span { color: white; }
         .back-btn {
             background: none;
             border: none;
             color: white;
             font-size: 1.2rem;
             cursor: pointer;
+            padding: 4px;
         }
         .container {
             max-width: 600px;
-            margin: 2rem auto;
+            margin: 1.5rem auto;
             padding: 0 1rem;
         }
         .page-title {
-            color: var(--forest);
-            font-size: 1.5rem;
+            color: #131921;
+            font-size: 1.6rem;
+            font-weight: 700;
             margin-bottom: 1.5rem;
         }
         .order-summary {
             background: white;
-            border-radius: 12px;
+            border-radius: 8px;
             padding: 1.25rem;
             margin-bottom: 1.5rem;
-            border: 1px solid var(--sage);
+            border: 1px solid #DDD;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
         }
         .order-title {
-            font-weight: 600;
-            color: var(--forest);
+            font-weight: 700;
+            color: #131921;
             margin-bottom: 1rem;
             padding-bottom: 0.75rem;
-            border-bottom: 1px solid #eee;
+            border-bottom: 1px solid #EEE;
+            font-size: 1.1rem;
         }
         .order-item {
             display: flex;
@@ -72,171 +73,104 @@
             justify-content: space-between;
             margin-top: 1rem;
             padding-top: 0.75rem;
-            border-top: 1px solid #eee;
+            border-top: 1px solid #EEE;
             font-weight: 700;
-            font-size: 1.1rem;
-            color: var(--forest);
+            font-size: 1.2rem;
+            color: #B12704;
         }
         .payment-methods {
             background: white;
-            border-radius: 12px;
+            border-radius: 8px;
             overflow: hidden;
-            border: 1px solid var(--sage);
+            border: 1px solid #DDD;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
         }
         .method-title {
-            font-weight: 600;
-            color: var(--forest);
+            font-weight: 700;
+            color: #131921;
             padding: 1.25rem;
-            border-bottom: 1px solid #eee;
+            border-bottom: 1px solid #EEE;
+            background-color: #F7F7F7;
         }
         .method-option {
             padding: 1.25rem;
-            border-bottom: 1px solid #eee;
+            border-bottom: 1px solid #EEE;
             cursor: pointer;
             transition: background 0.2s;
             display: flex;
             align-items: center;
             gap: 12px;
         }
-        .method-option:last-child {
-            border-bottom: none;
-        }
-        .method-option:hover {
-            background-color: #f8f9fa;
-        }
-        .method-option.selected {
-            background-color: var(--cream);
-        }
+        .method-option:last-child { border-bottom: none; }
+        .method-option:hover { background-color: #F3F3F3; }
+        .method-option.selected { background-color: #FEF8F2; border-left: 4px solid #FF9900; padding-left: calc(1.25rem - 4px); }
         .method-radio {
             width: 20px;
             height: 20px;
-            border: 2px solid var(--sage);
+            border: 2px solid #AAA;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
+            flex-shrink: 0;
         }
-        .method-radio.selected {
-            border-color: var(--green);
-            background-color: var(--green);
-        }
+        .method-radio.selected { border-color: #E47911; }
         .method-radio.selected::after {
             content: '';
-            width: 8px;
-            height: 8px;
-            background: white;
+            width: 10px;
+            height: 10px;
+            background: #E47911;
             border-radius: 50%;
         }
-        .method-info {
-            flex: 1;
-        }
-        .method-name {
-            font-weight: 600;
-            color: var(--forest);
-            margin-bottom: 2px;
-        }
-        .method-desc {
-            font-size: 0.85rem;
-            color: #888;
-        }
-        .method-icon {
-            font-size: 1.5rem;
-        }
-        /* ParaÜstü ödeme seçili olduğunda */
+        .method-info { flex: 1; }
+        .method-name { font-weight: 700; color: #131921; margin-bottom: 2px; font-size: 0.95rem; }
+        .method-desc { font-size: 0.8rem; color: #555; }
+        .method-icon { font-size: 1.4rem; }
         .paraustu-info {
             display: none;
-            padding: 1rem 1.25rem;
-            background-color: var(--cream);
-            border-bottom: 1px solid var(--sage);
-        }
-        .paraustu-info.show {
-            display: block;
-        }
-        .paraustu-info p {
-            font-size: 0.9rem;
-            color: #666;
+            padding: 1.25rem;
+            background-color: #FEF8F2;
+            border-bottom: 1px solid #DDD;
+            font-size: 0.85rem;
+            color: #333;
             line-height: 1.5;
         }
-        .paraustu-info strong {
-            color: var(--forest);
-        }
-        /* Klasik kart formu */
-        .card-form {
-            display: none;
-            padding: 1.25rem;
-        }
-        .card-form.show {
-            display: block;
-        }
-        .form-group {
-            margin-bottom: 1rem;
-        }
-        .form-label {
-            display: block;
-            font-size: 0.85rem;
-            color: #666;
-            margin-bottom: 4px;
-        }
-        .form-input {
-            width: 100%;
-            padding: 0.75rem;
-            border: 1px solid var(--sage);
-            border-radius: 8px;
-            font-size: 1rem;
-            transition: border-color 0.2s;
-        }
-        .form-input:focus {
-            outline: none;
-            border-color: var(--green);
-        }
-        .form-row {
-            display: flex;
-            gap: 1rem;
-        }
-        .form-row .form-group {
-            flex: 1;
-        }
+        .paraustu-info.show { display: block; }
+        .paraustu-info strong { color: #131921; }
         .btn-pay {
             width: 100%;
-            padding: 1rem;
-            background-color: var(--green);
-            color: white;
-            border: none;
-            border-radius: 10px;
+            padding: 0.85rem;
+            background-color: #FF9900;
+            color: #131921;
+            border: 1px solid #A88734;
+            border-radius: 8px;
             font-size: 1rem;
             font-weight: 700;
             cursor: pointer;
-            margin-top: 1rem;
-            transition: opacity 0.2s;
+            margin-top: 1.5rem;
+            box-shadow: 0 1px 0 rgba(255,255,255,.4) inset;
         }
-        .btn-pay:hover {
-            opacity: 0.9;
-        }
-        .btn-pay.paraustu {
-            background-color: var(--forest);
-        }
-        .btn-pay:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-        .disabled-method {
-            opacity: 0.5;
-            pointer-events: none;
-        }
+        .btn-pay:hover { background-color: #E47911; }
+        .btn-pay:disabled { opacity: 0.5; cursor: not-allowed; }
+        .disabled-method { opacity: 0.6; cursor: not-allowed; }
+        .secure-badge { text-align: center; font-size: 0.75rem; color: #666; margin-top: 1rem; }
     </style>
 </head>
 <body>
     <header>
-        <button class="back-btn" onclick="goBack()">←</button>
-        <div style="font-size: 1.2rem; font-weight: 600;">Ödeme</div>
+        <button class="back-btn" onclick="goBack()">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                <path d="M19 12H5M12 5l-7 7 7 7" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+        </button>
+        <div class="logo" onclick="goHome()">zamazor<span>.com.tr</span></div>
     </header>
 
     <div class="container">
-        <h1 class="page-title">Sipariş Özeti</h1>
+        <h1 class="page-title">Ödeme Yöntemi</h1>
 
-        <!-- Sipariş özeti -->
-        <div class="order-summary" id="order-summary">
-            <div class="order-title">Sipariş Detayları</div>
+        <div class="order-summary">
+            <div class="order-title">Sipariş Özeti</div>
             <div id="order-items"></div>
             <div class="order-total">
                 <span>Toplam</span>
@@ -244,73 +178,47 @@
             </div>
         </div>
 
-        <!-- Ödeme yöntemleri -->
         <div class="payment-methods">
-            <div class="method-title">Ödeme Yöntemi Seçin</div>
+            <div class="method-title">Bir ödeme yöntemi seçin</div>
 
-            <!-- Klasik Kart (Pasif - gösterim amaçlı) -->
-            <div class="method-option disabled-method" onclick="selectMethod('card')">
-                <div class="method-radio" id="radio-card"></div>
-                <div class="method-icon">💳</div>
-                <div class="method-info">
-                    <div class="method-name">Kredi/Banka Kartı</div>
-                    <div class="method-desc">Visa, Mastercard, American Express</div>
-                </div>
-            </div>
-
-            <!-- Klasik kart formu -->
-            <div class="card-form" id="card-form">
-                <div class="form-group">
-                    <label class="form-label">Kart Numarası</label>
-                    <input type="text" class="form-input" placeholder="0000 0000 0000 0000" maxlength="19">
-                </div>
-                <div class="form-row">
-                    <div class="form-group">
-                        <label class="form-label">Son Kullanma</label>
-                        <input type="text" class="form-input" placeholder="AA/YY" maxlength="5">
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">CVV</label>
-                        <input type="text" class="form-input" placeholder="000" maxlength="3">
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Kart Sahibi</label>
-                    <input type="text" class="form-input" placeholder="Ad Soyad">
-                </div>
-                <p style="font-size: 0.8rem; color: #888; margin-top: 0.5rem;">
-                    Bu ödeme yöntemi şu an simülasyon amaçlıdır.
-                </p>
-            </div>
-
-            <!-- ParaÜstü ile Öde -->
             <div class="method-option" onclick="selectMethod('paraustu')">
-                <div class="method-radio" id="radio-paraustu"></div>
+                <div class="method-radio selected" id="radio-paraustu"></div>
                 <div class="method-icon">✨</div>
                 <div class="method-info">
-                    <div class="method-name">ParaÜstü ile Öde</div>
-                    <div class="method-desc">Sanal kartınızla hızlı ve güvenli ödeme</div>
+                    <div class="method-name">ParaÜstü ile Güvenli Öde</div>
+                    <div class="method-desc">Sanal kartınızla ödeyin, para üstünü biriktirin</div>
                 </div>
             </div>
 
-            <!-- ParaÜstü bilgilendirme -->
-            <div class="paraustu-info" id="paraustu-info">
+            <div class="paraustu-info show" id="paraustu-info">
                 <p>
-                    <strong>ParaÜstü</strong> ile ödemede, uygulamadaki sanal kartınız kullanılarak
-                    güvenli ödeme yapılır. Kart bilgileriniz kaydedilmez.
+                    <strong>ParaÜstü</strong> ödeme geçidi ile alışverişlerinizde kuruşları yuvarlayarak
+                    otomatik tasarruf yapabilirsiniz. Sanal kartınız kullanılarak işlem güvenle tamamlanır.
                 </p>
+            </div>
+
+            <div class="method-option disabled-method">
+                <div class="method-radio"></div>
+                <div class="method-icon">💳</div>
+                <div class="method-info">
+                    <div class="method-name">Kredi veya Banka Kartı</div>
+                    <div class="method-desc">Klasik kartla ödeme (Bu simülasyonda aktif değil)</div>
+                </div>
             </div>
         </div>
 
-        <!-- Ödeme butonu -->
-        <button class="btn-pay" id="btn-pay" onclick="processPayment()" disabled>
-            Ödemeyi Tamamla
+        <button class="btn-pay" id="btn-pay" onclick="processPayment()">
+            Ödemeyi Tamamla ve Onayla
         </button>
+        
+        <div class="secure-badge">
+            🔒 SSL Sertifikalı Güvenli Ödeme Sistemi
+        </div>
     </div>
 
     <script>
         let cart = JSON.parse(localStorage.getItem('cart')) || [];
-        let selectedMethod = null;
+        let selectedMethod = 'paraustu';
 
         function renderOrderSummary() {
             const itemsContainer = document.getElementById('order-items');
@@ -338,53 +246,15 @@
             totalElement.textContent = total.toFixed(2).replace('.', ',') + ' ₺';
         }
 
-        function selectMethod(method) {
-            // Sadece paraustu aktif
-            if (method !== 'paraustu') return;
-
-            selectedMethod = method;
-
-            // Radio button güncelle
-            document.getElementById('radio-card').classList.remove('selected');
-            document.getElementById('radio-paraustu').classList.add('selected');
-
-            // Formları göster/gizle
-            document.getElementById('card-form').classList.remove('show');
-            document.getElementById('paraustu-info').classList.add('show');
-
-            // Butonu güncelle
-            const btn = document.getElementById('btn-pay');
-            btn.disabled = false;
-            btn.textContent = 'ParaÜstü ile Ödemeye Geç';
-            btn.classList.add('paraustu');
-        }
-
         function processPayment() {
-            if (selectedMethod !== 'paraustu') {
-                alert('Lütfen bir ödeme yöntemi seçin.');
-                return;
-            }
-
-            // ParaÜstü güvenli ödeme arayüzüne yönlendir
             const total = cart.reduce((sum, item) => sum + item.price, 0);
-            
-            // Satıcı ismi olarak e-ticaret sitesinin adını gönderelim
-            const merchant = "KitapDünyası";
-
-            // ParaÜstü uygulamasındaki /checkout sayfasına yönlendir
+            const merchant = "Zamazor";
             const url = `http://localhost:5173/checkout?amount=${total.toFixed(2)}&merchant=${encodeURIComponent(merchant)}`;
             window.location.href = url;
         }
 
-        // Sayfa açıldığında ParaÜstü'yü otomatik seç
-        window.onload = function() {
-            selectMethod('paraustu');
-            renderOrderSummary();
-        };
-
-        function goBack() {
-            window.location.href = 'sepet.html';
-        }
+        function goBack() { window.location.href = 'sepet.html'; }
+        function goHome() { window.location.href = 'ecommerce.html'; }
 
         renderOrderSummary();
     </script>

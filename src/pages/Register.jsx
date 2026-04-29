@@ -187,7 +187,7 @@ export default function Register() {
   const navigate = useNavigate();
   const { login } = useAuth();
   const [step, setStep] = useState("form"); // form | otp | success
-  const [form, setForm] = useState({ fullName: "", email: "", phone: "", pin: "", pinConfirm: "" });
+  const [form, setForm] = useState({ tcKimlik: "", fullName: "", email: "", phone: "", pin: "", pinConfirm: "" });
   const [focused, setFocused] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -206,6 +206,7 @@ export default function Register() {
   const rawPhone = form.phone.replace(/\D/g, "");
 
   const validate = () => {
+    if (form.tcKimlik.replace(/\D/g, "").length !== 11) return "TC Kimlik numarası 11 haneli olmalıdır.";
     if (!form.fullName.trim()) return "Ad soyad zorunludur.";
     if (!form.email.trim() || !/\S+@\S+\.\S+/.test(form.email)) return "Geçerli bir e-posta girin.";
     if (rawPhone.length !== 10) return "Geçerli bir telefon numarası girin.";
@@ -252,17 +253,7 @@ export default function Register() {
 
         {/* Logo */}
         <div style={{ textAlign: "center", marginBottom: "1.75rem" }}>
-          <div style={{
-            display: "inline-flex", alignItems: "center", justifyContent: "center",
-            width: 52, height: 52, borderRadius: "50%", backgroundColor: C.forest,
-            marginBottom: "0.65rem",
-          }}>
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-              <path d="M9.5 9.5C9.5 8.67 10.17 8 11 8h2c.83 0 1.5.67 1.5 1.5S13.83 11 13 11h-2c-.83 0-1.5.67-1.5 1.5S10.17 14 11 14h2c.83 0 1.5-.67 1.5-1.5" stroke={C.green} strokeWidth="1.8" strokeLinecap="round"/>
-              <path d="M12 6v2M12 16v2" stroke={C.mint} strokeWidth="1.8" strokeLinecap="round"/>
-              <circle cx="12" cy="12" r="9.5" stroke={C.sage} strokeWidth="1.2"/>
-            </svg>
-          </div>
+          <img src="/logo.png" alt="ParaÜstü" style={{ width: 64, height: 64, objectFit: "contain", marginBottom: "0.65rem" }} />
           <h1 style={{ color: C.forest, fontSize: 24, fontWeight: 700, margin: "0 0 3px" }}>ParaÜstü</h1>
           <p style={{ color: C.forest + "80", fontSize: 13, margin: 0 }}>
             {step === "otp" ? "Telefon doğrulama" : "Hesap oluştur"}
@@ -305,6 +296,19 @@ export default function Register() {
                   {error}
                 </div>
               )}
+
+              {/* TC Kimlik */}
+              <div>
+                <label style={{ display: "block", fontSize: 13, fontWeight: 500, color: C.forest, marginBottom: 5 }}>TC Kimlik Numarası</label>
+                <input
+                  type="text" inputMode="numeric" maxLength={11}
+                  value={form.tcKimlik}
+                  onChange={e => set("tcKimlik", e.target.value.replace(/\D/g, "").slice(0, 11))}
+                  onFocus={() => setFocused("tcKimlik")} onBlur={() => setFocused(null)}
+                  placeholder="00000000000"
+                  style={{ ...inputStyle(focused === "tcKimlik"), letterSpacing:"0.12em", fontSize:16 }}
+                />
+              </div>
 
               {/* Ad Soyad */}
               <div>

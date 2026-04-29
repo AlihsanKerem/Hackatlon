@@ -307,10 +307,27 @@ function AddCardModal({ onAdd, onClose }) {
 }
 
 export default function Cards() {
-  const [cards, setCards] = useState(INITIAL_CARDS);
+  const [cards, setCards] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [showAdd, setShowAdd] = useState(false);
   const [toast, setToast] = useState(null);
+
+  const fetchCards = async () => {
+    const userId = localStorage.getItem("userId");
+    try {
+      const res = await axiosInstance.get(`/cards?userId=${userId}`);
+      setCards(res.data);
+    } catch (err) {
+      console.error("Fetch cards error:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchCards();
+  }, []);
 
   const activeCard = cards.find(c => c.active);
 
@@ -319,31 +336,50 @@ export default function Cards() {
     setTimeout(() => setToast(null), 2500);
   };
 
-  const setActive = (id) => {
-    setCards(cs => cs.map(c => ({ ...c, active: c.id === id })));
-    showToast("Aktif kart güncellendi");
-  };
-
-  const confirmDelete = () => {
-    const wasActive = deleteTarget.active;
-    const remaining = cards.filter(c => c.id !== deleteTarget.id);
-    if (wasActive && remaining.length > 0) {
-      remaining[0].active = true;
+  const setActive = async (id) => {
+    const userId = localStorage.getItem("userId");
+    try {
+      await axiosInstance.post(`/cards/${id}/activate?userId=${userId}`);
+      setCards(cs => cs.map(c => ({ ...c, isActive: c.id === id })));
+      showToast("Aktif kart güncellendi");
+    } catch (err) {
+      console.error("Set active card error:", err);
     }
-    setCards(remaining);
-    setDeleteTarget(null);
-    showToast("Kart silindi");
   };
 
-  const addCard = ({ bank, last4, expiry }) => {
-    const newCard = {
-      id: Date.now(),
-      bank, last4, expiry,
-      active: cards.length === 0,
-    };
-    setCards(cs => [...cs, newCard]);
-    setShowAdd(false);
-    showToast("Kart eklendi");
+  const confirmDelete = async () => {
+    const userId = localStorage.getItem("userId");
+    try {
+      await axiosInstance.delete(`/cards/${deleteTarget.id}?userId=${userId}`);
+      const wasActive = deleteTarget.isActive;
+      const remaining = cards.filter(c => c.id !== deleteTarget.id);
+      if (wasActive && remaining.length > 0) {
+        remaining[0].isActive = true;
+      }
+      setCards(remaining);
+      setDeleteTarget(null);
+      showToast("Kart silindi");
+    } catch (err) {
+      console.error("Delete card error:", err);
+    }
+  };
+
+  const addCard = async ({ bank, last4, expiry }) => {
+    const userId = localStorage.getItem("userId");
+    try {
+      const res = await axiosInstance.post(`/cards?userId=${userId}`, {
+        bankName: bank,
+        cardNumber: "444455556666" + last4, // Mock full number
+        expiryDate: expiry,
+        maskedNumber: "**** " + last4,
+        isActive: cards.length === 0
+      });
+      setCards(cs => [...cs, res.data]);
+      setShowAdd(false);
+      showToast("Kart eklendi");
+    } catch (err) {
+      console.error("Add card error:", err);
+    }
   };
 
   return (

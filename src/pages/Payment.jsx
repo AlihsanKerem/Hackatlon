@@ -163,9 +163,10 @@ export default function Payment() {
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
-                    fontSize: 12
                   }}>
-                    ✓
+                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none">
+                      <path d="M5 13l4 4L19 7" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
+                    </svg>
                   </div>
                 )}
               </div>

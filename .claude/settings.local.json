@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(./gradlew.bat bootRun --no-daemon -x test)",
+      "Bash(./gradlew.bat bootRun --no-daemon -x test --stacktrace)",
+      "Bash(./gradlew.bat clean:*)",
+      "Bash(curl -s http://localhost:8080/api/roundup/balance?userId=dac46d06-118e-43a7-96ed-dbf4ac7b0582)"
+    ]
+  }
+}
