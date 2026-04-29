@@ -1,6 +1,5 @@
-import React, { useState, useEffect } from "react";
+import React from "react";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "../context/AuthContext";
 
 const C = {
   forest: "#012619",
@@ -10,32 +9,8 @@ const C = {
   cream:  "#E8E5DE",
 };
 
-const getInitials = (name) => {
-  if (!name) return "??";
-  const words = name.trim().split(" ");
-  if (words.length === 1) return words[0].slice(0, 2).toUpperCase();
-  return (words[0][0] + words[words.length - 1][0]).toUpperCase();
-};
-
 export default function Navbar({ title, showBack = false }) {
   const navigate = useNavigate();
-  const { token } = useAuth();
-  const [initials, setInitials] = useState("??");
-
-  useEffect(() => {
-    if (token) {
-      fetch('/api/auth/me', {
-        headers: { 'Authorization': `Bearer ${token}` }
-      })
-      .then(res => res.json())
-      .then(data => {
-        if (data && data.fullName) {
-          setInitials(getInitials(data.fullName));
-        }
-      })
-      .catch(console.error);
-    }
-  }, [token]);
 
   return (
     <nav style={{
@@ -57,11 +32,7 @@ export default function Navbar({ title, showBack = false }) {
         </button>
       )}
       <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-          <circle cx="12" cy="12" r="9.5" stroke={C.sage} strokeWidth="1.2"/>
-          <path d="M9.5 9.5C9.5 8.67 10.17 8 11 8h2c.83 0 1.5.67 1.5 1.5S13.83 11 13 11h-2c-.83 0-1.5.67-1.5 1.5S10.17 14 11 14h2c.83 0 1.5-.67 1.5-1.5" stroke={C.green} strokeWidth="1.6" strokeLinecap="round"/>
-          <path d="M12 6v2M12 16v2" stroke={C.mint} strokeWidth="1.6" strokeLinecap="round"/>
-        </svg>
+        <img src="/logo.png" alt="ParaÜstü" style={{ width: 28, height: 28, objectFit: "contain" }} />
         <span style={{ color: C.cream, fontWeight: 600, fontSize: 15 }}>ParaÜstü</span>
       </div>
       {title && (
@@ -78,7 +49,7 @@ export default function Navbar({ title, showBack = false }) {
           display: "flex", alignItems: "center", justifyContent: "center",
           fontSize: 11, fontWeight: 600, color: C.green,
         }}>
-          {initials}
+          AK
         </div>
       </div>
     </nav>

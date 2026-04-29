@@ -11,7 +11,7 @@ const C = {
   cream:  "#E8E5DE",
 };
 
-// MOCK_USER silindi, veriler backend'den gelecek
+const MOCK_USER = { fullName: "Ayşe Kaya", email: "ayse@example.com", phone: "+90 532 123 45 67" };
 
 const MOCK_ROUNDING = {
   under10:    "5",
@@ -20,46 +20,39 @@ const MOCK_ROUNDING = {
   under10000: "100",
 };
 
-// MOCK_RULE silindi, veriler backend'den gelecek
+const MOCK_RULE = { symbol: "THYAO.IS", threshold: 100, isActive: true };
 
 const ROUNDING_LABELS = {
-  under10:    "10 TL altı",
-  under100:   "10–100 TL",
-  under1000:  "100–1.000 TL",
-  under10000: "1.000 TL+",
-};
-
-const getInitials = (name) => {
-  if (!name) return "??";
-  const words = name.trim().split(" ");
-  if (words.length === 1) return words[0].slice(0, 2).toUpperCase();
-  return (words[0][0] + words[words.length - 1][0]).toUpperCase();
+  under10:    "10 TL altı işlemlerde geçerli",
+  under100:   "10–100 TL arası işlemlerde geçerli",
+  under1000:  "100–1.000 TL arası işlemlerde geçerli",
+  under10000: "1.000 TL+ işlemlerde geçerli",
 };
 
 const TIERS = [
   {
     id: "under10",
-    label: "10 TL altı",
+    label: "10 TL altı işlemlerde geçerli",
     options: [
-      { key: "1",  label: "1 TL",  ex: "7,40 → 8 TL",    roundup: "0,60 TL" },
-      { key: "5",  label: "5 TL",  ex: "7,40 → 10 TL",   roundup: "2,60 TL" },
-      { key: "10", label: "10 TL", ex: "7,40 → 10 TL",   roundup: "2,60 TL" },
+      { key: "1",  label: "1 TL",  ex: "3,40 → 4 TL",   roundup: "0,60 TL" },
+      { key: "5",  label: "5 TL",  ex: "3,40 → 5 TL",   roundup: "1,60 TL" },
+      { key: "10", label: "10 TL", ex: "3,40 → 10 TL",  roundup: "6,60 TL" },
     ],
   },
   {
     id: "under100",
-    label: "10–100 TL",
+    label: "10–100 TL arası işlemlerde geçerli",
     options: [
-      { key: "1",   label: "1 TL",   ex: "47,20 → 48 TL",  roundup: "0,80 TL" },
-      { key: "5",   label: "5 TL",   ex: "47,20 → 50 TL",  roundup: "2,80 TL" },
-      { key: "10",  label: "10 TL",  ex: "47,20 → 50 TL",  roundup: "2,80 TL" },
-      { key: "50",  label: "50 TL",  ex: "47,20 → 50 TL",  roundup: "2,80 TL" },
-      { key: "100", label: "100 TL", ex: "47,20 → 100 TL", roundup: "52,80 TL" },
+      { key: "1",   label: "1 TL",   ex: "43,20 → 44 TL",  roundup: "0,80 TL" },
+      { key: "5",   label: "5 TL",   ex: "43,20 → 45 TL",  roundup: "1,80 TL" },
+      { key: "10",  label: "10 TL",  ex: "43,20 → 50 TL",  roundup: "6,80 TL" },
+      { key: "50",  label: "50 TL",  ex: "43,20 → 50 TL",  roundup: "6,80 TL" },
+      { key: "100", label: "100 TL", ex: "43,20 → 100 TL", roundup: "56,80 TL" },
     ],
   },
   {
     id: "under1000",
-    label: "100–1.000 TL",
+    label: "100–1.000 TL arası işlemlerde geçerli",
     options: [
       { key: "1",    label: "1 TL",     ex: "320 → 321 TL",   roundup: "1 TL" },
       { key: "10",   label: "10 TL",    ex: "320 → 330 TL",   roundup: "10 TL" },
@@ -70,7 +63,7 @@ const TIERS = [
   },
   {
     id: "under10000",
-    label: "1.000 TL+",
+    label: "1.000 TL+ işlemlerde geçerli",
     options: [
       { key: "1",     label: "1 TL",      ex: "1.240 → 1.241 TL",  roundup: "1 TL" },
       { key: "10",    label: "10 TL",     ex: "1.240 → 1.250 TL",  roundup: "10 TL" },
@@ -375,71 +368,68 @@ function PinModal({ onClose }) {
 
 export default function Settings() {
   const navigate = useNavigate();
-  const { token, logout } = useAuth();
+  const { logout } = useAuth();
+  const [user, setUser] = useState(null);
   const [roundingPrefs, setRoundingPrefs] = useState(MOCK_ROUNDING);
-  const [dashboardData, setDashboardData] = useState(null);
+  const [rule, setRule] = useState(null);
   const [showRounding, setShowRounding] = useState(false);
   const [showPin, setShowPin] = useState(false);
   const [showLogout, setShowLogout] = useState(false);
   const [toast, setToast] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const userId = localStorage.getItem("userId");
+    if (!userId) { navigate("/login"); return; }
+
+    const fetchData = async () => {
+      try {
+        const [userRes, autoRes] = await Promise.all([
+          axiosInstance.get(`/users/me?userId=${userId}`),
+          axiosInstance.get(`/automation?userId=${userId}`)
+        ]);
+        
+        setUser(userRes.data);
+        if (userRes.data.preferences) {
+          // Backend preferences format might differ, mapping if needed
+          // setRoundingPrefs(userRes.data.preferences);
+        }
+        
+        if (autoRes.data) {
+          setRule({
+            symbol: autoRes.data.stockSymbol,
+            threshold: autoRes.data.threshold,
+            isActive: autoRes.data.active
+          });
+        }
+      } catch (err) {
+        console.error("Fetch settings error:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
+  }, [navigate]);
 
   const showToast = (msg) => { setToast(msg); setTimeout(() => setToast(null), 2500); };
 
-  const handleSaveRounding = (prefs) => {
-    setRoundingPrefs(prefs);
-    setShowRounding(false);
-    showToast("Yuvarlama tercihleri güncellendi");
+  const handleSaveRounding = async (prefs) => {
+    const userId = localStorage.getItem("userId");
+    try {
+      await axiosInstance.post(`/users/preferences?userId=${userId}`, prefs);
+      setRoundingPrefs(prefs);
+      setShowRounding(false);
+      showToast("Yuvarlama tercihleri güncellendi");
+    } catch (err) {
+      console.error("Save rounding prefs error:", err);
+      showToast("Hata oluştu");
+    }
   };
 
   const handleLogout = () => {
     logout();
     navigate("/login", { replace: true });
   };
-
-  const handleSeed = async () => {
-    if (!token) return;
-    try {
-      const res = await fetch('/api/test/seed', {
-        method: 'POST',
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-      if (res.ok) {
-        const data = await res.json();
-        showToast(data.message || "İşlem eklendi!");
-        // Refresh data
-        fetchDashboardData();
-      } else {
-        showToast("Demo veriler eklenirken hata oluştu.");
-      }
-    } catch (err) {
-      showToast("Bağlantı hatası");
-    }
-  };
-
-  const fetchDashboardData = () => {
-    if (token) {
-      fetch('/api/dashboard', {
-        headers: { 'Authorization': `Bearer ${token}` }
-      })
-      .then(res => {
-        if (!res.ok) { logout(); throw new Error("Oturum hatası"); }
-        return res.json();
-      })
-      .then(data => setDashboardData(data))
-      .catch(console.error);
-    }
-  };
-
-  useEffect(() => {
-    fetchDashboardData();
-  }, [token]);
-
-  if (!dashboardData) {
-    return <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', backgroundColor: C.cream, color: C.forest }}>Verileriniz yükleniyor...</div>;
-  }
-
-  const user = dashboardData.user;
-  const rule = dashboardData.automation || { symbol: "Ayarlanmadı", threshold: 0, active: false };
 
   return (
     <div style={{ backgroundColor: C.cream, minHeight: "100vh" }}>
@@ -462,12 +452,12 @@ export default function Settings() {
             display: "flex", alignItems: "center", justifyContent: "center",
             fontSize: 16, fontWeight: 600, color: C.green, flexShrink: 0,
           }}>
-            {getInitials(user.fullName)}
+            {user?.fullName?.split(" ").map(n => n[0]).join("").toUpperCase() || "PK"}
           </div>
           <div style={{ flex: 1 }}>
-            <p style={{ fontSize: 15, fontWeight: 600, color: "#fff", margin: "0 0 2px" }}>{user.fullName ? user.fullName : "İsimsiz"}</p>
-            <p style={{ fontSize: 12, color: C.mint, margin: "0 0 1px" }}>Kayıtlı E-posta</p>
-            <p style={{ fontSize: 12, color: C.sage, margin: 0 }}>Onaylı Kullanıcı</p>
+            <p style={{ fontSize: 15, fontWeight: 600, color: "#fff", margin: "0 0 2px" }}>{user?.fullName || "Kullanıcı"}</p>
+            <p style={{ fontSize: 12, color: C.mint, margin: "0 0 1px" }}>{user?.email || "email@example.com"}</p>
+            <p style={{ fontSize: 12, color: C.sage, margin: 0 }}>{user?.phoneNumber || "+90 5xx xxx xx xx"}</p>
           </div>
         </div>
 
@@ -525,28 +515,34 @@ export default function Settings() {
               }
             />
             <div style={{ padding: "0.85rem 1rem" }}>
-              <div style={{
-                display: "flex", alignItems: "center", justifyContent: "space-between",
-                marginBottom: "0.75rem",
-              }}>
-                <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+              {rule ? (
+                <>
                   <div style={{
-                    width: 34, height: 34, borderRadius: 8, backgroundColor: C.forest,
-                    display: "flex", alignItems: "center", justifyContent: "center",
-                    fontSize: 9, fontWeight: 700, color: C.mint,
+                    display: "flex", alignItems: "center", justifyContent: "space-between",
+                    marginBottom: "0.75rem",
                   }}>
-                    {rule.symbol.split(".")[0].slice(0, 4)}
+                    <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                      <div style={{
+                        width: 34, height: 34, borderRadius: 8, backgroundColor: C.forest,
+                        display: "flex", alignItems: "center", justifyContent: "center",
+                        fontSize: 9, fontWeight: 700, color: C.mint,
+                      }}>
+                        {rule.symbol.split(".")[0].slice(0, 4)}
+                      </div>
+                      <div>
+                        <p style={{ fontSize: 13, fontWeight: 600, color: C.forest, margin: "0 0 1px" }}>{rule.symbol}</p>
+                        <p style={{ fontSize: 11, color: C.forest + "55", margin: 0 }}>Eşik: {rule.threshold} TL</p>
+                      </div>
+                    </div>
+                    <div style={{ display: "flex", alignItems: "center", gap: 6, backgroundColor: rule.isActive ? C.green + "15" : C.sage + "15", borderRadius: 99, padding: "3px 10px" }}>
+                      <div style={{ width: 6, height: 6, borderRadius: "50%", backgroundColor: rule.isActive ? C.green : C.sage }} />
+                      <span style={{ fontSize: 11, fontWeight: 600, color: rule.isActive ? C.green : C.forest + "40" }}>{rule.isActive ? "Aktif" : "Pasif"}</span>
+                    </div>
                   </div>
-                  <div>
-                    <p style={{ fontSize: 13, fontWeight: 600, color: C.forest, margin: "0 0 1px" }}>{rule.symbol}</p>
-                    <p style={{ fontSize: 11, color: C.forest + "55", margin: 0 }}>Fiyata ulaşınca al</p>
-                  </div>
-                </div>
-                <div style={{ display: "flex", alignItems: "center", gap: 6, backgroundColor: rule.active ? C.green + "15" : "#DC262615", borderRadius: 99, padding: "3px 10px" }}>
-                  <div style={{ width: 6, height: 6, borderRadius: "50%", backgroundColor: rule.active ? C.green : "#DC2626" }} />
-                  <span style={{ fontSize: 11, fontWeight: 600, color: rule.active ? C.green : "#DC2626" }}>{rule.active ? "Aktif" : "Pasif"}</span>
-                </div>
-              </div>
+                </>
+              ) : (
+                <p style={{ fontSize: 13, color: C.forest + "50", textAlign: "center", marginBottom: "0.75rem" }}>Aktif otomasyon kuralı yok.</p>
+              )}
               <button
                 onClick={() => navigate("/automation")}
                 style={{
@@ -575,20 +571,8 @@ export default function Settings() {
             <Row label="Çıkış Yap" danger onClick={() => setShowLogout(true)} last />
           </SectionCard>
 
-          <SectionCard>
-            <SectionHeader
-              title="Geliştirici"
-              icon={
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
-                  <path d="M12 2v20M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6" stroke={C.mint} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                </svg>
-              }
-            />
-            <Row label="Demo Veri Doldur" value="Tüm tablolara örnek veriler ekle" onClick={handleSeed} />
-          </SectionCard>
-
           <p style={{ textAlign: "center", fontSize: 11, color: C.forest + "35", margin: "0.5rem 0 1rem" }}>
-            ParaÜstü v1.0.0
+            ParaÜstü v1.0.0 · Mock mod
           </p>
         </div>
       </main>

@@ -1,5 +1,6 @@
 import { useState, useMemo } from "react";
 import Navbar from "../components/Navbar";
+import axiosInstance from "../api/axiosInstance";
 
 const C = {
   forest: "#012619",
@@ -27,7 +28,7 @@ const MOCK_STOCKS = [
   { symbol: "EKGYO.IS", name: "Emlak Konut GYO", price: 18.90, sector: "GYO" },
 ];
 
-// MOCK_ACTIVE_RULE silindi, backend'den gelecek
+const MOCK_ACTIVE_RULE = { symbol: "THYAO.IS", threshold: 100, isActive: true };
 
 const fmt = (n) =>
   new Intl.NumberFormat("tr-TR", { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(n);
@@ -85,7 +86,7 @@ function ActiveRuleCard({ rule, stocks, onToggle, onDelete }) {
         borderRadius: 8, padding: "0.6rem 0.8rem", marginBottom: "0.75rem",
       }}>
         <p style={{ fontSize: 13, color: rule.isActive ? C.mint : C.forest + "70", margin: 0 }}>
-          Biriken para üstü <strong style={{ color: rule.isActive ? "#fff" : C.forest }}>hisse fiyatına</strong> ulaşınca otomatik satın al
+          Biriken para üstü <strong style={{ color: rule.isActive ? "#fff" : C.forest }}>{rule.threshold} TL</strong>'ye ulaşınca otomatik satın al
         </p>
       </div>
 
@@ -132,7 +133,7 @@ function BottomSheet({ stock, existingRule, onSave, onClose }) {
     setSaving(true);
     await new Promise(r => setTimeout(r, 700));
     setSaving(false);
-    onSave({ symbol: stock.symbol, threshold: 0 });
+    onSave({ symbol: stock.symbol, threshold: Number(threshold) });
   };
 
   return (
@@ -177,8 +178,32 @@ function BottomSheet({ stock, existingRule, onSave, onClose }) {
         </div>
 
         <div style={{ marginBottom: "1rem" }}>
-          <p style={{ fontSize: 13, color: C.forest, margin: "0", lineHeight: 1.5, fontWeight: 500 }}>
-            Hisse alım otomasyonu aktifleştirildiğinde, biriken para üstleriniz <strong>{stock.symbol}</strong> güncel piyasa fiyatına ulaştığı anda otomatik alım yapılır.
+          <label style={{ fontSize: 12, fontWeight: 500, color: C.forest + "80", display: "block", marginBottom: 6 }}>
+            Eşik tutarı (TL)
+          </label>
+          <div style={{ position: "relative" }}>
+            <input
+              type="number"
+              value={threshold}
+              onChange={e => setThreshold(e.target.value)}
+              min="1"
+              style={{
+                width: "100%", boxSizing: "border-box",
+                padding: "0.65rem 2.5rem 0.65rem 0.9rem",
+                border: `1.5px solid ${C.sage}`,
+                borderRadius: 8, fontSize: 15, fontWeight: 600,
+                color: C.forest, outline: "none", fontFamily: "inherit",
+                backgroundColor: "#fff",
+              }}
+            />
+            <span style={{
+              position: "absolute", right: 12, top: "50%",
+              transform: "translateY(-50%)",
+              fontSize: 13, color: C.forest + "50", fontWeight: 500,
+            }}>₺</span>
+          </div>
+          <p style={{ fontSize: 12, color: C.forest + "55", margin: "6px 0 0", lineHeight: 1.5 }}>
+            Biriken para üstü bu tutara ulaştığında 1 adet {stock.symbol} otomatik alınır.
           </p>
         </div>
 
@@ -212,17 +237,17 @@ function BottomSheet({ stock, existingRule, onSave, onClose }) {
         ) : (
           <button
             onClick={handleSave}
-            disabled={saving}
+            disabled={saving || !threshold || Number(threshold) <= 0}
             style={{
               width: "100%", padding: "0.75rem",
-              backgroundColor: saving ? C.sage : C.green,
+              backgroundColor: saving || !threshold ? C.sage : C.green,
               color: "#fff", border: "none", borderRadius: 9,
               fontSize: 15, fontWeight: 600,
               cursor: saving ? "not-allowed" : "pointer",
               fontFamily: "inherit",
             }}
           >
-            {saving ? "Kaydediliyor..." : "Otomasyonu Başlat"}
+            {saving ? "Kaydediliyor..." : "Otomasyonu Kaydet"}
           </button>
         )}
       </div>
@@ -230,71 +255,37 @@ function BottomSheet({ stock, existingRule, onSave, onClose }) {
   );
 }
 
-import { useEffect } from "react";
-import { useAuth } from "../context/AuthContext";
-
 export default function Automation() {
-  const { token, logout } = useAuth();
   const [query, setQuery] = useState("");
   const [activeRule, setActiveRule] = useState(null);
   const [selectedStock, setSelectedStock] = useState(null);
   const [toast, setToast] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [loadingSymbol, setLoadingSymbol] = useState(null);
 
   useEffect(() => {
-    if (token) {
-      fetch('/api/dashboard', {
-        headers: { 'Authorization': `Bearer ${token}` }
-      })
-      .then(res => {
-        if (!res.ok) { logout(); throw new Error("Oturum hatası"); }
-        return res.json();
-      })
-      .then(data => {
-        if (data.automation) {
+    const userId = localStorage.getItem("userId");
+    const fetchRule = async () => {
+      try {
+        const res = await axiosInstance.get(`/automation?userId=${userId}`);
+        if (res.data) {
           setActiveRule({
-            symbol: data.automation.symbol,
-            threshold: data.automation.threshold,
-            isActive: data.automation.active
+            symbol: res.data.stockSymbol,
+            threshold: res.data.threshold,
+            isActive: res.data.active
           });
         }
+      } catch (err) {
+        console.error("Fetch automation rule error:", err);
+      } finally {
         setLoading(false);
-      })
-      .catch(err => {
-        console.error(err);
-        setLoading(false);
-      });
-    }
-  }, [token, logout]);
+      }
+    };
+    fetchRule();
+  }, []);
 
   const showToast = (msg) => {
     setToast(msg);
     setTimeout(() => setToast(null), 2500);
-  };
-
-  const handleSelectStock = async (stock) => {
-    setLoadingSymbol(stock.symbol);
-    try {
-      const response = await fetch(`http://localhost:8080/api/stocks/${stock.symbol}`);
-      if (response.ok) {
-        const realData = await response.json();
-        setSelectedStock({
-          ...stock,
-          price: realData.price || stock.price,
-          name: realData.name || stock.name,
-        });
-      } else {
-        setSelectedStock(stock);
-        showToast("Canlı fiyat alınamadı, eski veri gösteriliyor.");
-      }
-    } catch (e) {
-      console.error(e);
-      setSelectedStock(stock);
-      showToast("Sunucuya bağlanılamadı, eski veri gösteriliyor.");
-    } finally {
-      setLoadingSymbol(null);
-    }
   };
 
   const filtered = useMemo(() => {
@@ -308,74 +299,48 @@ export default function Automation() {
   }, [query]);
 
   const handleSave = async ({ symbol, threshold }) => {
+    const userId = localStorage.getItem("userId");
     try {
-      const res = await fetch('/api/automation/save', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ active: true, symbol, threshold })
+      await axiosInstance.post(`/automation/save?userId=${userId}`, {
+        active: true,
+        stockSymbol: symbol,
+        threshold: threshold
       });
-      if (res.ok) {
-        setActiveRule({ symbol, threshold, isActive: true });
-        setSelectedStock(null);
-        showToast("Otomasyon kuralı kaydedildi");
-      } else {
-        showToast("Hata: Kural kaydedilemedi");
-      }
-    } catch (e) {
-      showToast("Sunucu hatası");
+      setActiveRule({ symbol, threshold, isActive: true });
+      setSelectedStock(null);
+      showToast("Otomasyon kuralı kaydedildi");
+    } catch (err) {
+      console.error("Save automation rule error:", err);
+      showToast("Hata oluştu");
     }
   };
 
   const handleToggle = async () => {
     const newState = !activeRule.isActive;
+    const userId = localStorage.getItem("userId");
     try {
-      const res = await fetch('/api/automation/save', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ 
-          active: newState, 
-          symbol: activeRule.symbol, 
-          threshold: activeRule.threshold 
-        })
+      await axiosInstance.post(`/automation/save?userId=${userId}`, {
+        active: newState,
+        stockSymbol: activeRule.symbol,
+        threshold: activeRule.threshold,
       });
-      if (res.ok) {
-        setActiveRule(r => ({ ...r, isActive: newState }));
-        showToast(newState ? "Otomasyon aktif edildi" : "Otomasyon duraklatıldı");
-      } else {
-        showToast("Hata: Durum güncellenemedi");
-      }
-    } catch (e) {
-      showToast("Sunucu hatası");
+      setActiveRule(r => ({ ...r, isActive: newState }));
+      showToast(newState ? "Otomasyon aktif edildi" : "Otomasyon duraklatıldı");
+    } catch (err) {
+      console.error("Toggle automation error:", err);
     }
   };
 
   const handleDelete = async () => {
+    const userId = localStorage.getItem("userId");
     try {
-      const res = await fetch('/api/automation', {
-        method: 'DELETE',
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-      if (res.ok) {
-        setActiveRule(null);
-        showToast("Kural silindi");
-      } else {
-        showToast("Hata: Kural silinemedi");
-      }
-    } catch (e) {
-      showToast("Sunucu hatası");
+      await axiosInstance.delete(`/automation?userId=${userId}`);
+      setActiveRule(null);
+      showToast("Kural silindi");
+    } catch (err) {
+      console.error("Delete automation error:", err);
     }
   };
-
-
-  if (loading) {
-    return <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', backgroundColor: C.cream, color: C.forest }}>Yükleniyor...</div>;
-  }
 
   return (
     <div style={{ backgroundColor: C.cream, minHeight: "100vh" }}>
@@ -385,7 +350,7 @@ export default function Automation() {
         <div style={{ marginBottom: "1.25rem" }}>
           <h1 style={{ fontSize: 20, fontWeight: 700, color: C.forest, margin: "0 0 3px" }}>Otomasyon</h1>
           <p style={{ fontSize: 13, color: C.forest + "60", margin: 0 }}>
-            Biriken para üstün hisse fiyatına ulaşınca otomatik al
+            Biriken para üstün eşiğe ulaşınca otomatik hisse al
           </p>
         </div>
 
@@ -436,15 +401,14 @@ export default function Automation() {
                 return (
                   <div
                     key={stock.symbol}
-                    onClick={() => handleSelectStock(stock)}
+                    onClick={() => setSelectedStock(stock)}
                     style={{
                       display: "flex", alignItems: "center",
                       padding: "0.75rem 1rem",
                       borderBottom: i < filtered.length - 1 ? `1px solid ${C.sage}40` : "none",
                       backgroundColor: isActive ? C.green + "06" : "transparent",
-                      cursor: loadingSymbol === stock.symbol ? "wait" : "pointer",
-                      opacity: loadingSymbol === stock.symbol ? 0.6 : 1,
-                      transition: "all 0.15s",
+                      cursor: "pointer",
+                      transition: "background-color 0.15s",
                     }}
                   >
                     <div style={{

@@ -11,7 +11,10 @@ const C = {
 
 const BANKS = ["A Bankası", "B Bankası"];
 
-// INITIAL_CARDS silindi, backend'den gelecek
+const INITIAL_CARDS = [
+  { id: 1, bank: "A Bankası", last4: "1234", expiry: "08/27", active: true },
+  { id: 2, bank: "B Bankası", last4: "5678", expiry: "11/26", active: false },
+];
 
 const bankColor = (bank) => bank === "A Bankası"
   ? { bg: "#E8F4FD", text: "#1A6FA8", accent: "#3A9FD8" }
@@ -303,44 +306,28 @@ function AddCardModal({ onAdd, onClose }) {
   );
 }
 
-import { useEffect } from "react";
-import { useAuth } from "../context/AuthContext";
-
 export default function Cards() {
-  const { token, logout } = useAuth();
   const [cards, setCards] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [showAdd, setShowAdd] = useState(false);
   const [toast, setToast] = useState(null);
-  const [loading, setLoading] = useState(true);
 
-  const fetchCards = () => {
-    if (!token) return;
-    fetch('/api/cards', {
-      headers: { 'Authorization': `Bearer ${token}` }
-    })
-    .then(res => {
-      if (!res.ok) { logout(); throw new Error("Oturum hatası"); }
-      return res.json();
-    })
-    .then(data => {
-      // Map backend entity fields to frontend expected fields
-      const mappedCards = data.map(c => ({
-        id: c.cardId,
-        bank: c.bankName,
-        last4: c.cardNumber.slice(-4),
-        expiry: c.cardDate,
-        active: c.isActive
-      }));
-      setCards(mappedCards);
+  const fetchCards = async () => {
+    const userId = localStorage.getItem("userId");
+    try {
+      const res = await axiosInstance.get(`/cards?userId=${userId}`);
+      setCards(res.data);
+    } catch (err) {
+      console.error("Fetch cards error:", err);
+    } finally {
       setLoading(false);
-    })
-    .catch(console.error);
+    }
   };
 
   useEffect(() => {
     fetchCards();
-  }, [token, logout]);
+  }, []);
 
   const activeCard = cards.find(c => c.active);
 
@@ -349,56 +336,51 @@ export default function Cards() {
     setTimeout(() => setToast(null), 2500);
   };
 
-  const setActive = (id) => {
-    setCards(cs => cs.map(c => ({ ...c, active: c.id === id })));
-    showToast("Aktif kart güncellendi");
+  const setActive = async (id) => {
+    const userId = localStorage.getItem("userId");
+    try {
+      await axiosInstance.post(`/cards/${id}/activate?userId=${userId}`);
+      setCards(cs => cs.map(c => ({ ...c, isActive: c.id === id })));
+      showToast("Aktif kart güncellendi");
+    } catch (err) {
+      console.error("Set active card error:", err);
+    }
   };
 
-  const confirmDelete = () => {
-    const wasActive = deleteTarget.active;
-    const remaining = cards.filter(c => c.id !== deleteTarget.id);
-    if (wasActive && remaining.length > 0) {
-      remaining[0].active = true;
+  const confirmDelete = async () => {
+    const userId = localStorage.getItem("userId");
+    try {
+      await axiosInstance.delete(`/cards/${deleteTarget.id}?userId=${userId}`);
+      const wasActive = deleteTarget.isActive;
+      const remaining = cards.filter(c => c.id !== deleteTarget.id);
+      if (wasActive && remaining.length > 0) {
+        remaining[0].isActive = true;
+      }
+      setCards(remaining);
+      setDeleteTarget(null);
+      showToast("Kart silindi");
+    } catch (err) {
+      console.error("Delete card error:", err);
     }
-    setCards(remaining);
-    setDeleteTarget(null);
-    showToast("Kart silindi");
   };
 
   const addCard = async ({ bank, last4, expiry }) => {
-    // We send a mock full card number to backend since frontend only collects masked
-    const payload = {
-      bankName: bank,
-      cardNumber: "111122223333" + last4,
-      cardDate: expiry,
-      cardCvv: "123",
-      isActive: cards.length === 0
-    };
-
+    const userId = localStorage.getItem("userId");
     try {
-      const res = await fetch('/api/cards', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(payload)
+      const res = await axiosInstance.post(`/cards?userId=${userId}`, {
+        bankName: bank,
+        cardNumber: "444455556666" + last4, // Mock full number
+        expiryDate: expiry,
+        maskedNumber: "**** " + last4,
+        isActive: cards.length === 0
       });
-      if (res.ok) {
-        showToast("Kart eklendi");
-        setShowAdd(false);
-        fetchCards();
-      } else {
-        showToast("Hata oluştu");
-      }
-    } catch (e) {
-      showToast("Bağlantı hatası");
+      setCards(cs => [...cs, res.data]);
+      setShowAdd(false);
+      showToast("Kart eklendi");
+    } catch (err) {
+      console.error("Add card error:", err);
     }
   };
-
-  if (loading) {
-    return <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', backgroundColor: C.cream, color: C.forest }}>Yükleniyor...</div>;
-  }
 
   return (
     <div style={{ backgroundColor: C.cream, minHeight: "100vh" }}>

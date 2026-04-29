@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zamazor - E-Ticaret Simülasyonu</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: Arial, 'Helvetica Neue', sans-serif;
+            background-color: #EAEDED;
+        }
+        header {
+            background-color: #131921;
+            color: white;
+            padding: 0.75rem 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        .logo {
+            font-size: 1.6rem;
+            font-weight: 900;
+            color: #FF9900;
+            letter-spacing: -0.5px;
+        }
+        .logo span { color: white; }
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        .cart-btn {
+            position: relative;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            background-color: #FF9900;
+            color: #131921;
+            border: none;
+            padding: 8px 14px;
+            border-radius: 4px;
+            font-weight: 700;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: background 0.15s;
+        }
+        .cart-btn:hover { background-color: #E47911; }
+        .cart-badge {
+            position: absolute;
+            top: -6px;
+            right: -6px;
+            background-color: #131921;
+            color: #FF9900;
+            font-size: 0.7rem;
+            font-weight: 700;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1.5px solid #FF9900;
+        }
+        .banner {
+            background: linear-gradient(135deg, #232F3E 0%, #37475A 100%);
+            color: white;
+            text-align: center;
+            padding: 0.6rem;
+            font-size: 0.85rem;
+            letter-spacing: 0.02em;
+        }
+        .container {
+            max-width: 1000px;
+            margin: 1.5rem auto;
+            padding: 0 1rem;
+        }
+        .section-title {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: #131921;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 3px solid #FF9900;
+            display: inline-block;
+        }
+        .products {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 1.2rem;
+            margin-top: 1rem;
+        }
+        .product-card {
+            background: white;
+            border-radius: 8px;
+            padding: 1.2rem;
+            text-align: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            border: 1px solid #DDD;
+            transition: box-shadow 0.2s;
+        }
+        .product-card:hover {
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        .product-emoji { font-size: 3rem; margin-bottom: 0.75rem; }
+        .product-name {
+            font-weight: 600;
+            color: #007185;
+            margin-bottom: 0.4rem;
+            font-size: 0.95rem;
+            line-height: 1.4;
+        }
+        .product-name:hover { color: #C7511F; text-decoration: underline; cursor: pointer; }
+        .product-rating {
+            color: #FF9900;
+            font-size: 0.8rem;
+            margin-bottom: 0.4rem;
+        }
+        .product-price {
+            font-size: 1.3rem;
+            color: #B12704;
+            font-weight: 700;
+            margin-bottom: 0.25rem;
+        }
+        .product-shipping {
+            font-size: 0.75rem;
+            color: #555;
+            margin-bottom: 0.9rem;
+        }
+        .product-shipping span { color: #007185; }
+        .btn-group { display: flex; flex-direction: column; gap: 6px; }
+        .btn-cart {
+            background-color: #FF9900;
+            color: #131921;
+            border: none;
+            padding: 0.65rem 1rem;
+            border-radius: 20px;
+            font-weight: 700;
+            cursor: pointer;
+            width: 100%;
+            font-size: 0.85rem;
+            transition: background 0.15s;
+        }
+        .btn-cart:hover { background-color: #E47911; }
+        .btn-buy {
+            background-color: #FFA41C;
+            color: #131921;
+            border: none;
+            padding: 0.65rem 1rem;
+            border-radius: 20px;
+            font-weight: 700;
+            cursor: pointer;
+            width: 100%;
+            font-size: 0.85rem;
+            transition: background 0.15s;
+        }
+        .btn-buy:hover { background-color: #FA8900; }
+        footer {
+            background-color: #232F3E;
+            color: #CCC;
+            text-align: center;
+            padding: 1.5rem;
+            margin-top: 3rem;
+            font-size: 0.85rem;
+        }
+        footer a { color: #FF9900; text-decoration: none; }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="logo">zamazor<span>.com.tr</span></div>
+        <div class="header-right">
+            <button class="cart-btn" onclick="goToCart()">
+                🛒 Sepet
+                <span id="cart-badge" class="cart-badge" style="display: none;">0</span>
+            </button>
+        </div>
+    </header>
+
+    <div class="banner">
+        🚀 Ücretsiz Kargo — 150 ₺ ve üzeri tüm siparişlerde! &nbsp;|&nbsp; <strong style="color:#FF9900;">ParaÜstü</strong> ile öde, para üstünü kumbaranda biriktir!
+    </div>
+
+    <div class="container">
+        <div class="section-title">Günün Fırsatları</div>
+        <div class="products" id="product-list"></div>
+    </div>
+
+    <footer>
+        &copy; 2026 Zamazor — Simülasyon amaçlıdır &nbsp;|&nbsp;
+        <a href="#">Yardım</a> &nbsp;|&nbsp; <a href="#">İletişim</a>
+    </footer>
+
+    <script>
+        const products = [
+            { id: 1, name: "Python ile Programlama — Başlangıçtan İleri Seviye", price: 149.90, image: "📚", rating: "⭐⭐⭐⭐⭐", reviews: 2341 },
+            { id: 2, name: "Kablosuz Bluetooth Kulaklık Pro", price: 299.00, image: "🎧", rating: "⭐⭐⭐⭐", reviews: 875 },
+            { id: 3, name: "Organik Yöresel Kahve 500g", price: 87.50, image: "☕", rating: "⭐⭐⭐⭐⭐", reviews: 4102 },
+            { id: 4, name: "Profesyonel Yoga Matı", price: 210.00, image: "🧘", rating: "⭐⭐⭐⭐", reviews: 563 },
+            { id: 5, name: "RGB Mekanik Klavye", price: 1249.00, image: "⌨️", rating: "⭐⭐⭐⭐⭐", reviews: 1298 },
+            { id: 6, name: "Deri Kapak Günlük Defter A5", price: 34.90, image: "📓", rating: "⭐⭐⭐⭐", reviews: 712 },
+        ];
+
+        let cart = JSON.parse(localStorage.getItem('cart')) || [];
+
+        function updateCartBadge() {
+            const badge = document.getElementById('cart-badge');
+            if (cart.length > 0) {
+                badge.style.display = 'flex';
+                badge.textContent = cart.length;
+            } else {
+                badge.style.display = 'none';
+            }
+        }
+
+        function addToCart(id) {
+            const product = products.find(p => p.id === id);
+            cart.push(product);
+            localStorage.setItem('cart', JSON.stringify(cart));
+            updateCartBadge();
+            alert(`✅ ${product.name} sepete eklendi!`);
+        }
+
+        function buyNow(id) {
+            const product = products.find(p => p.id === id);
+            cart = [product];
+            localStorage.setItem('cart', JSON.stringify(cart));
+            window.location.href = 'sepet.html';
+        }
+
+        function goToCart() {
+            if (cart.length === 0) { alert('Sepetiniz boş!'); return; }
+            window.location.href = 'sepet.html';
+        }
+
+        const list = document.getElementById('product-list');
+        products.forEach(p => {
+            const card = document.createElement('div');
+            card.className = 'product-card';
+            card.innerHTML = `
+                <div class="product-emoji">${p.image}</div>
+                <div class="product-name">${p.name}</div>
+                <div class="product-rating">${p.rating} <span style="color:#555;font-size:0.75rem">(${p.reviews.toLocaleString('tr-TR')})</span></div>
+                <div class="product-price">${p.price.toFixed(2).replace('.', ',')} ₺</div>
+                <div class="product-shipping">Ücretsiz Kargo ile <span>yarın teslim</span></div>
+                <div class="btn-group">
+                    <button class="btn-cart" onclick="addToCart(${p.id})">Sepete Ekle</button>
+                    <button class="btn-buy" onclick="buyNow(${p.id})">Hemen Al</button>
+                </div>
+            `;
+            list.appendChild(card);
+        });
+
+        updateCartBadge();
+    </script>
+</body>
+</html>
