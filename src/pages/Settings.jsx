@@ -591,6 +591,8 @@ export default function Settings() {
     try {
       const res = await axiosInstance.post("/test/seed");
       showToast(res.data.message || "Demo veriler eklendi");
+      // Veriler eklendikten sonra ana sayfaya yönlendir ki hemen görebilsin
+      setTimeout(() => navigate("/"), 1500);
     } catch (err) {
       showToast("Veri eklenemedi");
     }

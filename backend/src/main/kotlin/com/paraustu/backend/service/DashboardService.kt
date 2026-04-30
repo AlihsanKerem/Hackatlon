@@ -75,7 +75,7 @@ class DashboardService(
             transactions = transactions.map {
                 TransactionDto(
                     id = it.transactionId.toString(),
-                    date = it.processedAt.format(formatter),
+                    date = it.processedAt?.format(formatter) ?: "Bilinmeyen Tarih",
                     merchant = it.merchantName ?: it.address ?: "Bilinmeyen",
                     amount = it.amountSpent ?: BigDecimal.ZERO,
                     roundup = it.roundupAmount ?: BigDecimal.ZERO

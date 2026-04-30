@@ -25,7 +25,12 @@ class SeedController(
     @PostMapping("/seed")
     fun seedData(@RequestHeader("Authorization") token: String): ResponseEntity<Any> {
         try {
-            val userId = UUID.fromString(token.replace("Bearer ", ""))
+            // Token temizleme ve UserId elde etme
+            val userIdStr = token.replace("Bearer ", "").trim()
+            val userId = UUID.fromString(userIdStr)
+            
+            println(">>> SEED ISTEGI: Kullanici ID = $userId")
+            
             val user = userRepository.findById(userId).orElseThrow { IllegalArgumentException("Kullanıcı bulunamadı") }
 
             // 1. Kart ve Bakiye Kontrolü
@@ -48,7 +53,7 @@ class SeedController(
                 })
             }
 
-            // 2. Demo İşlemleri Ekle
+            // 2. Demo İşlemleri Ekle (Görseldeki Shell, Getir, A101)
             val demoTransactions = listOf(
                 Triple("A101", BigDecimal("22.40"), LocalDateTime.now().minusDays(1).withHour(10)),
                 Triple("A101", BigDecimal("22.40"), LocalDateTime.now().minusDays(1).withHour(11)),
@@ -62,7 +67,7 @@ class SeedController(
                 val roundup = paraUstuService.calculateRoundup(amount, user)
                 totalAddedRoundup = totalAddedRoundup.add(roundup)
 
-                transactionRepository.save(Transaction().apply {
+                val savedTx = transactionRepository.save(Transaction().apply {
                     this.userId = userId
                     this.merchantName = merchant
                     this.amountSpent = amount
@@ -70,16 +75,18 @@ class SeedController(
                     this.roundupAmount = roundup
                     this.processedAt = time
                 })
+                println(">>> DEMO ISLEM KAYDEDILDI: ${savedTx.merchantName} - Tutar: ${savedTx.amountSpent} - ParaUstu: ${savedTx.roundupAmount}")
             }
 
             // 3. Bakiyeyi bu işlemlere göre eşitle (eski bakiyenin üzerine ekle)
             currentBal.totalBalance = (currentBal.totalBalance ?: BigDecimal.ZERO).add(totalAddedRoundup)
             balanceRepository.save(currentBal)
             
-            dashboardService.getDashboardData(userId.toString())
+            println(">>> SEED TAMAMLANDI. Yeni Bakiye: ${currentBal.totalBalance}")
 
-            return ResponseEntity.ok(mapOf("message" to "İşlemler başarıyla eklendi."))
+            return ResponseEntity.ok(mapOf("message" to "Demo işlemler (Shell, Getir, A101) başarıyla eklendi."))
         } catch (e: Exception) {
+            println(">>> SEED HATASI: ${e.message}")
             e.printStackTrace()
             return ResponseEntity.internalServerError().body(mapOf("error" to "Hata: ${e.message}"))
         }
