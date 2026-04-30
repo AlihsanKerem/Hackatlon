@@ -100,14 +100,14 @@ function KumbaramTab({ data }) {
           <div style={{ padding: "1.5rem", textAlign: "center", color: C.forest + "70", fontSize: 13 }}>
             Henüz işleminiz bulunmamaktadır.
           </div>
-        ) : transactions.slice(0, 10).map((tx, i) => (
+        ) : transactions.slice(0, 5).map((tx, i) => (
           <div
             key={tx.id}
             style={{
               display: "flex",
               alignItems: "center",
               padding: "0.75rem 1rem",
-              borderBottom: i < Math.min(transactions.length, 10) - 1 ? `1px solid ${C.sage}40` : "none",
+              borderBottom: i < Math.min(transactions.length, 5) - 1 ? `1px solid ${C.sage}40` : "none",
             }}
           >
             {/* Merchant icon */}
