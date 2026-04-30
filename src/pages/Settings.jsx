@@ -551,8 +551,7 @@ export default function Settings() {
         
         setUser(userRes.data);
         if (userRes.data.preferences) {
-          // Backend preferences format might differ, mapping if needed
-          // setRoundingPrefs(userRes.data.preferences);
+          setRoundingPrefs(userRes.data.preferences);
         }
         
         if (autoRes.data && autoRes.data.symbol) {

@@ -14,9 +14,20 @@ const C = {
 const fmt = (n) =>
   new Intl.NumberFormat("tr-TR", { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(n || 0);
 
-const getRoundup = (val, pref) => {
-  const map = { NEAREST_1: 1, NEAREST_5: 5, NEAREST_10: 10, NEAREST_50: 50, NEAREST_100: 100 };
-  const p = map[pref] ?? 10;
+const getRoundup = (val, user) => {
+  const prefs = user?.preferences;
+  let p = 10; // Varsayılan
+
+  if (prefs) {
+    if (val < 10) p = parseInt(prefs.under10) || 5;
+    else if (val < 100) p = parseInt(prefs.under100) || 10;
+    else if (val < 1000) p = parseInt(prefs.under1000) || 50;
+    else p = parseInt(prefs.under10000) || 100;
+  } else {
+    const map = { NEAREST_1: 1, NEAREST_5: 5, NEAREST_10: 10, NEAREST_50: 50, NEAREST_100: 100 };
+    p = map[user?.roundingPreference] ?? 10;
+  }
+
   const charged = Math.ceil(val / p) * p;
   return { roundup: Math.max(0, charged - val), total: charged };
 };
@@ -103,7 +114,7 @@ export default function Checkout() {
     clearInterval(timerRef.current);
     setStatus("processing");
 
-    const { roundup, total } = getRoundup(amount, user?.roundingPreference);
+    const { roundup, total } = getRoundup(amount, user);
     try {
       await axiosInstance.post("/transactions/simulate", {
         userId: userId,
@@ -139,7 +150,7 @@ export default function Checkout() {
     );
   }
 
-  const { roundup, total } = getRoundup(amount, user.roundingPreference);
+  const { roundup, total } = getRoundup(amount, user);
 
   // Başarılı ödeme ekranı
   if (status === "success") {
