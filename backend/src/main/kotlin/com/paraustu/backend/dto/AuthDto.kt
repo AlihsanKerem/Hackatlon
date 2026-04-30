@@ -12,7 +12,7 @@ data class AuthResponse(
     val token: String,
     val id: String,
     val message: String,
-    val roundingPreference: String = "NEAREST_10"
+    val preferences: RoundingPreferencesDto? = null
 )
 
 data class LoginRequest(
@@ -26,5 +26,5 @@ data class UserDto(
     val email: String,
     val phone: String,
     val roundupBalance: Double,
-    val roundingPreference: String = "NEAREST_10"
+    val preferences: RoundingPreferencesDto? = null
 )

@@ -250,7 +250,7 @@
             const total = cart.reduce((sum, item) => sum + item.price, 0);
             const merchant = "Zamazor";
             // Port bağımsız olması için relative path kullanıyoruz
-            const url = `/checkout?amount=${total.toFixed(2)}&merchant=${encodeURIComponent(merchant)}`;
+            const url = `http://localhost:5173/checkout?amount=${total.toFixed(2)}&merchant=${encodeURIComponent(merchant)}`;
             window.location.href = url;
         }
 

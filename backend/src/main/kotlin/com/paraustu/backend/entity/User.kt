@@ -20,7 +20,11 @@ class User {
     @Convert(converter = com.paraustu.backend.security.CryptoConverter::class)
     var pin: String? = null
     
-    var roundingPreference: String = "NEAREST_10"
+    var roundingUnder10: String = "5"
+    var roundingUnder100: String = "10"
+    var roundingUnder1000: String = "50"
+    var roundingUnder10000: String = "100"
+
     
     @Column(unique = true)
     var email: String? = null

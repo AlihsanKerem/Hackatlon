@@ -3,6 +3,8 @@ package com.paraustu.backend.service
 import com.paraustu.backend.dto.AuthResponse
 import com.paraustu.backend.dto.RegisterRequest
 import com.paraustu.backend.entity.User
+import com.paraustu.backend.dto.RoundingPreferencesDto
+import com.paraustu.backend.dto.UserDto
 import com.paraustu.backend.repository.UserRepository
 import com.paraustu.backend.security.PasswordUtils
 import org.springframework.stereotype.Service
@@ -35,7 +37,10 @@ class AuthService(
             this.phone = request.phone
             this.pin = request.pin // Pin'i şifreli saklıyoruz (CryptoConverter ile)
             this.passwordHash = passwordUtils.hashPassword(request.pin) // Geriye dönük uyumluluk
-            this.roundingPreference = "NEAREST_10"
+            this.roundingUnder10 = "5"
+            this.roundingUnder100 = "10"
+            this.roundingUnder1000 = "50"
+            this.roundingUnder10000 = "100"
         }
 
         val savedUser = userRepository.save(user)
@@ -44,7 +49,12 @@ class AuthService(
             token = savedUser.id.toString(),
             id = savedUser.id.toString(),
             message = "Kayıt başarılı.",
-            roundingPreference = savedUser.roundingPreference
+            preferences = RoundingPreferencesDto(
+                under10 = savedUser.roundingUnder10,
+                under100 = savedUser.roundingUnder100,
+                under1000 = savedUser.roundingUnder1000,
+                under10000 = savedUser.roundingUnder10000
+            )
         )
     }
 
@@ -64,7 +74,12 @@ class AuthService(
             token = user.id.toString(),
             id = user.id.toString(),
             message = "Giriş başarılı.",
-            roundingPreference = user.roundingPreference
+            preferences = RoundingPreferencesDto(
+                under10 = user.roundingUnder10,
+                under100 = user.roundingUnder100,
+                under1000 = user.roundingUnder1000,
+                under10000 = user.roundingUnder10000
+            )
         )
     }
 
@@ -78,7 +93,25 @@ class AuthService(
             email = user.email ?: "",
             phone = user.phone ?: "",
             roundupBalance = 0.0,
-            roundingPreference = user.roundingPreference
+            preferences = RoundingPreferencesDto(
+                under10 = user.roundingUnder10,
+                under100 = user.roundingUnder100,
+                under1000 = user.roundingUnder1000,
+                under10000 = user.roundingUnder10000
+            )
         )
+    }
+
+    fun updatePreferences(userIdStr: String, prefs: RoundingPreferencesDto) {
+        val userId = java.util.UUID.fromString(userIdStr)
+        val user = userRepository.findById(userId)
+            .orElseThrow { IllegalArgumentException("Kullanıcı bulunamadı") }
+        
+        prefs.under10?.let { user.roundingUnder10 = it }
+        prefs.under100?.let { user.roundingUnder100 = it }
+        prefs.under1000?.let { user.roundingUnder1000 = it }
+        prefs.under10000?.let { user.roundingUnder10000 = it }
+        
+        userRepository.save(user)
     }
 }

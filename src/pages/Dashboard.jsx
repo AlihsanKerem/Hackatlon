@@ -113,7 +113,7 @@ function KumbaramTab({ data }) {
             {/* Merchant icon */}
             <div style={{
               width: 36, height: 36, borderRadius: 10,
-              backgroundColor: C.cream,
+              backgroundColor: "#F3F4F6",
               display: "flex", alignItems: "center", justifyContent: "center",
               marginRight: 12, flexShrink: 0,
               fontSize: 12, fontWeight: 700, color: C.forest + "80",

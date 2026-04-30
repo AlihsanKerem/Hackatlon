@@ -4,10 +4,10 @@ import axiosInstance from "../api/axiosInstance";
 
 const C = {
   forest: "#012619",
-  green:  "#4EA664",
-  mint:   "#78BF9E",
-  sage:   "#A9D9C2",
-  cream:  "#E8E5DE",
+  green: "#4EA664",
+  mint: "#78BF9E",
+  sage: "#A9D9C2",
+  cream: "#E8E5DE",
 };
 
 const BANKS = ["A Bankası", "B Bankası"];
@@ -44,10 +44,10 @@ function BankIcon({ bank, size = 36 }) {
 function CardChip() {
   return (
     <svg width="28" height="22" viewBox="0 0 28 22" fill="none">
-      <rect x="0.5" y="0.5" width="27" height="21" rx="3.5" fill="#D4AF37" stroke="#B8962E" strokeWidth="0.5"/>
-      <rect x="9" y="0.5" width="10" height="21" fill="#C9A227" opacity="0.6"/>
-      <rect x="0.5" y="7" width="27" height="8" fill="#C9A227" opacity="0.6"/>
-      <rect x="9" y="7" width="10" height="8" fill="#B8962E" opacity="0.5"/>
+      <rect x="0.5" y="0.5" width="27" height="21" rx="3.5" fill="#D4AF37" stroke="#B8962E" strokeWidth="0.5" />
+      <rect x="9" y="0.5" width="10" height="21" fill="#C9A227" opacity="0.6" />
+      <rect x="0.5" y="7" width="27" height="8" fill="#C9A227" opacity="0.6" />
+      <rect x="9" y="7" width="10" height="8" fill="#B8962E" opacity="0.5" />
     </svg>
   );
 }
@@ -55,7 +55,7 @@ function CardChip() {
 function CardVisual({ card }) {
   const bc = bankColor(card.bankName || card.bank);
   const last4 = card.last4 || (card.cardNumber ? card.cardNumber.slice(-4) : "••••");
-  
+
   return (
     <div style={{
       width: "100%", aspectRatio: "1.6",
@@ -116,8 +116,8 @@ function DeleteModal({ card, onConfirm, onCancel }) {
           margin: "0 auto 1rem",
         }}>
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-            <path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6" stroke="#DC2626" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
-            <path d="M10 11v5M14 11v5" stroke="#DC2626" strokeWidth="1.8" strokeLinecap="round"/>
+            <path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6" stroke="#DC2626" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+            <path d="M10 11v5M14 11v5" stroke="#DC2626" strokeWidth="1.8" strokeLinecap="round" />
           </svg>
         </div>
         <h3 style={{ fontSize: 16, fontWeight: 600, color: C.forest, textAlign: "center", margin: "0 0 6px" }}>
@@ -157,7 +157,7 @@ function DeleteModal({ card, onConfirm, onCancel }) {
   );
 }
 
-const EMPTY_FORM = { bank: "", number: "", expiry: "", cvv: "" };
+const EMPTY_FORM = { bank: "", number: "", expiry: "" };
 
 function AddCardModal({ onAdd, onClose }) {
   const [form, setForm] = useState(EMPTY_FORM);
@@ -182,7 +182,6 @@ function AddCardModal({ onAdd, onClose }) {
     if (!form.bank.trim()) { setError("Banka adı zorunludur."); return; }
     if (rawNumber.length !== 16) { setError("Kart numarası 16 haneli olmalıdır."); return; }
     if (form.expiry.length !== 5) { setError("Geçerli bir son kullanma tarihi girin."); return; }
-    if (form.cvv.length < 3) { setError("CVV en az 3 haneli olmalıdır."); return; }
     setError("");
     onAdd({
       bank: form.bank,
@@ -274,25 +273,8 @@ function AddCardModal({ onAdd, onClose }) {
                 style={{ ...inputStyle("expiry"), letterSpacing: "0.08em" }}
               />
             </div>
-            <div style={{ flex: 1 }}>
-              <label style={{ fontSize: 12, fontWeight: 500, color: C.forest + "80", display: "block", marginBottom: 5 }}>CVV</label>
-              <input
-                type="password"
-                inputMode="numeric"
-                placeholder="•••"
-                maxLength={4}
-                value={form.cvv}
-                onChange={e => set("cvv", e.target.value.replace(/\D/g, "").slice(0, 4))}
-                onFocus={() => setFocused("cvv")}
-                onBlur={() => setFocused(null)}
-                style={inputStyle("cvv")}
-              />
-            </div>
           </div>
 
-          <p style={{ fontSize: 11, color: C.forest + "45", margin: "0", lineHeight: 1.5 }}>
-            CVV bilgisi form gönderildikten sonra saklanmaz.
-          </p>
 
           <button
             onClick={handleAdd}
@@ -439,7 +421,7 @@ export default function Cards() {
               }}
             >
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none">
-                <path d="M12 5v14M5 12h14" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round"/>
+                <path d="M12 5v14M5 12h14" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" />
               </svg>
               Kart Ekle
             </button>
@@ -448,8 +430,8 @@ export default function Cards() {
           {cards.length === 0 ? (
             <div style={{ padding: "2rem 1rem", textAlign: "center" }}>
               <svg width="40" height="40" viewBox="0 0 24 24" fill="none" style={{ marginBottom: 10, opacity: 0.3 }}>
-                <rect x="2" y="5" width="20" height="14" rx="3" stroke={C.forest} strokeWidth="1.6"/>
-                <path d="M2 10h20" stroke={C.forest} strokeWidth="1.6"/>
+                <rect x="2" y="5" width="20" height="14" rx="3" stroke={C.forest} strokeWidth="1.6" />
+                <path d="M2 10h20" stroke={C.forest} strokeWidth="1.6" />
               </svg>
               <p style={{ color: C.forest + "50", fontSize: 14, margin: 0 }}>Henüz kart eklenmedi</p>
             </div>
@@ -515,7 +497,7 @@ export default function Cards() {
                     }}
                   >
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
-                      <path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6" stroke="#DC2626" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+                      <path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6" stroke="#DC2626" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
                     </svg>
                   </button>
                 </div>

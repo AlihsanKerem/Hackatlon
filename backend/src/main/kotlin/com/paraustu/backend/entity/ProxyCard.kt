@@ -22,10 +22,9 @@ class ProxyCard {
     @Convert(converter = com.paraustu.backend.security.CryptoConverter::class)
     var expiryDate: String? = null
     
-    @Convert(converter = com.paraustu.backend.security.CryptoConverter::class)
-    var cardCvv: String? = null
     
     var maskedNumber: String? = null
+
     
     var isActive: Boolean = true
 }

@@ -4,10 +4,10 @@ import axiosInstance from "../api/axiosInstance";
 
 const C = {
   forest: "#012619",
-  green:  "#4EA664",
-  mint:   "#78BF9E",
-  sage:   "#A9D9C2",
-  cream:  "#E8E5DE",
+  green: "#4EA664",
+  mint: "#78BF9E",
+  sage: "#A9D9C2",
+  cream: "#E8E5DE",
 };
 
 const MOCK_STOCKS = [
@@ -108,7 +108,7 @@ function ActiveRuleCard({ rule, stocks, onToggle, onDelete }) {
           display: "flex", alignItems: "center", justifyContent: "center",
         }}>
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
-            <path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6" stroke="#DC2626" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+            <path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6" stroke="#DC2626" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
         </button>
       </div>
