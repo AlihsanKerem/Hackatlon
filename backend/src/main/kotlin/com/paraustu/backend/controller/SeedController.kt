@@ -53,13 +53,14 @@ class SeedController(
                 })
             }
 
-            // 2. Demo İşlemleri Ekle (Görseldeki Shell, Getir, A101)
-            val demoTransactions = listOf(
-                Triple("A101", BigDecimal("22.40"), LocalDateTime.now().minusDays(1).withHour(10)),
-                Triple("A101", BigDecimal("22.40"), LocalDateTime.now().minusDays(1).withHour(11)),
-                Triple("Getir", BigDecimal("64.30"), LocalDateTime.now().minusHours(5)),
-                Triple("Shell", BigDecimal("1240.00"), LocalDateTime.now().minusHours(2))
+            // 2. Rastgele 1 adet Demo İşlemi Seç ve Ekle
+            val allDemos = listOf(
+                Triple("Shell", BigDecimal("1240.00"), LocalDateTime.now()),
+                Triple("Getir", BigDecimal("64.30"), LocalDateTime.now()),
+                Triple("A101", BigDecimal("22.40"), LocalDateTime.now()),
+                Triple("A101", BigDecimal("45.60"), LocalDateTime.now())
             )
+            val demoTransactions = listOf(allDemos.random())
 
             var totalAddedRoundup = BigDecimal.ZERO
 
