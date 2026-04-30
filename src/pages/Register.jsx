@@ -12,10 +12,10 @@ const mockVerifyOtp = async (otp) => {
 
 const C = {
   forest: "#012619",
-  green:  "#4EA664",
-  mint:   "#78BF9E",
-  sage:   "#A9D9C2",
-  cream:  "#E8E5DE",
+  green: "#4EA664",
+  mint: "#78BF9E",
+  sage: "#A9D9C2",
+  cream: "#E8E5DE",
 };
 
 const inputStyle = (focused) => ({
@@ -101,7 +101,7 @@ function OtpScreen({ phone, onSuccess }) {
     try {
       await mockVerifyOtp(otp);
       onSuccess();
-    } catch(e) {
+    } catch (e) {
       setError(e.message);
     } finally {
       setLoading(false);
@@ -118,8 +118,8 @@ function OtpScreen({ phone, onSuccess }) {
           margin: "0 auto 0.75rem",
         }}>
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
-            <path d="M17 2H7C5.9 2 5 2.9 5 4v16c0 1.1.9 2 2 2h10c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z" stroke={C.green} strokeWidth="1.8"/>
-            <path d="M12 18h.01" stroke={C.green} strokeWidth="2" strokeLinecap="round"/>
+            <path d="M17 2H7C5.9 2 5 2.9 5 4v16c0 1.1.9 2 2 2h10c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z" stroke={C.green} strokeWidth="1.8" />
+            <path d="M12 18h.01" stroke={C.green} strokeWidth="2" strokeLinecap="round" />
           </svg>
         </div>
         <p style={{ color: C.forest, fontWeight: 600, fontSize: 15, margin: "0 0 4px" }}>Telefonu doğrula</p>
@@ -193,9 +193,9 @@ export default function Register() {
   const formatPhone = (raw) => {
     const digits = raw.replace(/\D/g, "").slice(0, 10);
     let out = digits;
-    if (digits.length > 3) out = digits.slice(0,3) + " " + digits.slice(3);
-    if (digits.length > 6) out = digits.slice(0,3) + " " + digits.slice(3,6) + " " + digits.slice(6);
-    if (digits.length > 8) out = digits.slice(0,3) + " " + digits.slice(3,6) + " " + digits.slice(6,8) + " " + digits.slice(8);
+    if (digits.length > 3) out = digits.slice(0, 3) + " " + digits.slice(3);
+    if (digits.length > 6) out = digits.slice(0, 3) + " " + digits.slice(3, 6) + " " + digits.slice(6);
+    if (digits.length > 8) out = digits.slice(0, 3) + " " + digits.slice(3, 6) + " " + digits.slice(6, 8) + " " + digits.slice(8);
     return out;
   };
 
@@ -228,7 +228,7 @@ export default function Register() {
           pin: form.pin.trim()
         })
       });
-      
+
       const data = await res.json();
       if (!res.ok) {
         // TC kimlik veya e-posta zaten kayıtlıysa kullanıcı dostu mesaj göster
@@ -238,11 +238,11 @@ export default function Register() {
         }
         throw new Error(data.error || "Kayıt sırasında bir hata oluştu.");
       }
-      
+
       localStorage.setItem("temp_auth_token", data.token);
       localStorage.setItem("temp_auth_userId", data.id);
       setStep("otp");
-    } catch(e) {
+    } catch (e) {
       setError(e.message);
     } finally {
       setLoading(false);
@@ -299,7 +299,7 @@ export default function Register() {
                 margin: "0 auto 1rem",
               }}>
                 <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
-                  <path d="M5 13l4 4L19 7" stroke={C.green} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"/>
+                  <path d="M5 13l4 4L19 7" stroke={C.green} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
                 </svg>
               </div>
               <p style={{ color: C.forest, fontWeight: 600, fontSize: 16, margin: "0 0 6px" }}>Hesabın oluşturuldu!</p>
@@ -430,14 +430,6 @@ export default function Register() {
             </span>
           </p>
         )}
-
-        <div style={{
-          marginTop: "1.25rem", padding: "0.65rem 0.9rem", borderRadius: 8,
-          backgroundColor: C.mint + "25", border: `1px dashed ${C.mint}`,
-          fontSize: 12, color: C.forest + "70", textAlign: "center", lineHeight: 1.6,
-        }}>
-          Mock mod · Hata testi: var@test.com · OTP hata: 000000
-        </div>
 
       </div>
     </div>
