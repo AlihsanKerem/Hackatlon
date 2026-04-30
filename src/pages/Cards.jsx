@@ -157,7 +157,7 @@ function DeleteModal({ card, onConfirm, onCancel }) {
   );
 }
 
-const EMPTY_FORM = { bank: "", number: "", expiry: "", cvv: "" };
+const EMPTY_FORM = { bank: "", number: "", expiry: "" };
 
 function AddCardModal({ onAdd, onClose }) {
   const [form, setForm] = useState(EMPTY_FORM);
@@ -182,7 +182,6 @@ function AddCardModal({ onAdd, onClose }) {
     if (!form.bank.trim()) { setError("Banka adı zorunludur."); return; }
     if (rawNumber.length !== 16) { setError("Kart numarası 16 haneli olmalıdır."); return; }
     if (form.expiry.length !== 5) { setError("Geçerli bir son kullanma tarihi girin."); return; }
-    if (form.cvv.length < 3) { setError("CVV en az 3 haneli olmalıdır."); return; }
     setError("");
     onAdd({
       bank: form.bank,
@@ -274,25 +273,8 @@ function AddCardModal({ onAdd, onClose }) {
                 style={{ ...inputStyle("expiry"), letterSpacing: "0.08em" }}
               />
             </div>
-            <div style={{ flex: 1 }}>
-              <label style={{ fontSize: 12, fontWeight: 500, color: C.forest + "80", display: "block", marginBottom: 5 }}>CVV</label>
-              <input
-                type="password"
-                inputMode="numeric"
-                placeholder="•••"
-                maxLength={4}
-                value={form.cvv}
-                onChange={e => set("cvv", e.target.value.replace(/\D/g, "").slice(0, 4))}
-                onFocus={() => setFocused("cvv")}
-                onBlur={() => setFocused(null)}
-                style={inputStyle("cvv")}
-              />
-            </div>
           </div>
 
-          <p style={{ fontSize: 11, color: C.forest + "45", margin: "0", lineHeight: 1.5 }}>
-            CVV bilgisi form gönderildikten sonra saklanmaz.
-          </p>
 
           <button
             onClick={handleAdd}

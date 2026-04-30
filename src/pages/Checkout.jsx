@@ -35,6 +35,8 @@ export default function Checkout() {
   const [showCardPicker, setShowCardPicker] = useState(false);
   const [status, setStatus]       = useState("idle"); // idle | processing | success | rejected
   const [countdown, setCountdown] = useState(60);
+  const [cvv, setCvv]             = useState("");
+  const [cvvError, setCvvError]   = useState("");
   const timerRef = useRef(null);
 
   // Countdown
@@ -79,9 +81,17 @@ export default function Checkout() {
   }, []);
 
   const handlePay = async () => {
+    const userId = localStorage.getItem("userId");
+
+    if (cvv.length < 3) {
+      setCvvError("Geçerli bir CVV giriniz.");
+      return;
+    }
+    setCvvError("");
+    
     clearInterval(timerRef.current);
     setStatus("processing");
-    const userId = localStorage.getItem("userId");
+
     const { roundup, total } = getRoundup(amount, user?.roundingPreference);
     try {
       await axiosInstance.post("/transactions/simulate", {
@@ -291,6 +301,30 @@ export default function Checkout() {
                 </div>
               </div>
             )}
+          </div>
+
+          {/* CVV Input */}
+          <div style={{ marginBottom: "1.5rem" }}>
+            <label style={{ fontSize: 12, fontWeight: 500, color: C.forest + "60", display: "block", marginBottom: 5 }}>Güvenlik Kodu (CVV)</label>
+            <input
+              type="password"
+              inputMode="numeric"
+              placeholder="•••"
+              maxLength={4}
+              value={cvv}
+              onChange={e => setCvv(e.target.value.replace(/\D/g, "").slice(0, 4))}
+              style={{
+                width: "100%", boxSizing: "border-box",
+                padding: "0.75rem",
+                border: `1.5px solid ${cvvError ? "#DC2626" : C.sage}`,
+                borderRadius: 12, fontSize: 16, color: C.forest,
+                outline: "none", fontFamily: "inherit",
+                backgroundColor: "#fff",
+                letterSpacing: "0.2em",
+                textAlign: "center"
+              }}
+            />
+            {cvvError && <p style={{ color: "#DC2626", fontSize: 11, marginTop: 4, marginHorizontal: 4 }}>{cvvError}</p>}
           </div>
 
           {/* Butonlar */}
