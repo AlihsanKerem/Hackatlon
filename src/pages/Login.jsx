@@ -1,5 +1,5 @@
 // src/pages/Login.jsx
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useNavigate, Navigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 
@@ -14,11 +14,66 @@ const inputStyle = (focused) => ({
   transition: "border-color 0.15s", fontFamily: "inherit",
 });
 
+// 6 haneli PIN input
+function PinInput({ value, onChange, focused, onFocus, onBlur }) {
+  const inputs = useRef([]);
+  const digits = value.split("").concat(Array(6).fill("")).slice(0, 6);
+
+  const handleChange = (i, e) => {
+    const v = e.target.value.replace(/\D/g, "").slice(-1);
+    const arr = digits.map((d, idx) => idx === i ? v : d);
+    onChange(arr.join(""));
+    if (v && i < 5) inputs.current[i + 1]?.focus();
+  };
+
+  const handleKeyDown = (i, e) => {
+    if (e.key === "Backspace" && !digits[i] && i > 0) {
+      inputs.current[i - 1]?.focus();
+      const arr = digits.map((d, idx) => idx === i - 1 ? "" : d);
+      onChange(arr.join(""));
+    }
+  };
+
+  return (
+    <div style={{ display: "flex", gap: 8 }}>
+      {digits.map((d, i) => (
+        <input
+          key={i}
+          ref={el => inputs.current[i] = el}
+          type="password"
+          inputMode="numeric"
+          maxLength={1}
+          value={d}
+          onChange={e => handleChange(i, e)}
+          onKeyDown={e => handleKeyDown(i, e)}
+          onFocus={onFocus}
+          onBlur={onBlur}
+          style={{
+            width: "100%",
+            aspectRatio: "1",
+            maxWidth: 52,
+            textAlign: "center",
+            fontSize: 20,
+            fontWeight: 600,
+            borderRadius: 8,
+            border: `1.5px solid ${focused ? C.green : C.sage}`,
+            color: C.forest,
+            outline: "none",
+            backgroundColor: "#fff",
+            transition: "border-color 0.15s",
+            fontFamily: "inherit",
+          }}
+        />
+      ))}
+    </div>
+  );
+}
+
 export default function Login() {
   const { login, isAuthenticated } = useAuth();
   const navigate = useNavigate();
   const [tcKimlik, setTcKimlik] = useState("");
-  const [password, setPassword] = useState("");
+  const [pin, setPin] = useState("");
   const [focused, setFocused] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -28,13 +83,13 @@ export default function Login() {
 
   const handleLogin = async () => {
     setError("");
-    if (!tcKimlik || !password) { setError("Lütfen tüm alanları doldurun."); return; }
+    if (!tcKimlik || !pin) { setError("Lütfen tüm alanları doldurun."); return; }
     setLoading(true);
     try {
       const res = await fetch('/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ tcKimlik: tcKimlik.trim(), pin: password.trim() })
+        body: JSON.stringify({ tcKimlik: tcKimlik.trim(), pin: pin.trim() })
       });
 
       const data = await res.json();
@@ -90,11 +145,12 @@ export default function Login() {
             </div>
 
             <div>
-              <label style={{ display: "block", fontSize: 13, fontWeight: 500, color: C.forest, marginBottom: 6 }}>Şifre</label>
-              <input type="password" value={password} onChange={e => setPassword(e.target.value)}
-                onFocus={() => setFocused("password")} onBlur={() => setFocused(null)}
-                onKeyDown={e => e.key === "Enter" && handleLogin()}
-                placeholder="••••••••" style={inputStyle(focused === "password")} />
+              <label style={{ display: "block", fontSize: 13, fontWeight: 500, color: C.forest, marginBottom: 6 }}>
+                PIN Kodu <span style={{ fontSize: 12, color: C.forest + "60", fontWeight: 400 }}>(6 haneli)</span>
+              </label>
+              <PinInput value={pin} onChange={setPin}
+                focused={focused === "pin"}
+                onFocus={() => setFocused("pin")} onBlur={() => setFocused(null)} />
             </div>
 
             <button onClick={handleLogin} disabled={loading} style={{
