@@ -80,6 +80,7 @@ export default function Login() {
           <p style={{ color:C.forest+"80", fontSize:13, margin:0 }}>Para üstünü yatırıma dönüştür</p>
         </div>
 
+
         {/* Kart */}
         <div style={{ backgroundColor:"#fff", borderRadius:16, border:`1px solid ${C.sage}`, padding:"2rem" }}>
           <h2 style={{ color:C.forest, fontSize:18, fontWeight:600, margin:"0 0 1.5rem" }}>

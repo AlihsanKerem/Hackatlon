@@ -35,8 +35,13 @@ export default function Checkout() {
   const [showCardPicker, setShowCardPicker] = useState(false);
   const [status, setStatus] = useState("idle"); // idle | processing | success | rejected
   const [countdown, setCountdown] = useState(60);
+<<<<<<< HEAD
   const [pin, setPin] = useState("");
   const [pinError, setPinError] = useState("");
+=======
+  const [cvv, setCvv]             = useState("");
+  const [cvvError, setCvvError]   = useState("");
+>>>>>>> bdcaa6de52550e31e5603aa9d2c83bee7fa8b9b5
   const timerRef = useRef(null);
 
   // Countdown
@@ -91,12 +96,21 @@ export default function Checkout() {
   const handlePay = async () => {
     const userId = localStorage.getItem("userId");
 
+<<<<<<< HEAD
     if (pin.length < 6) {
       setPinError("Lütfen 6 haneli şifrenizi (PIN) giriniz.");
       return;
     }
     setPinError("");
 
+=======
+    if (cvv.length < 3) {
+      setCvvError("Geçerli bir CVV giriniz.");
+      return;
+    }
+    setCvvError("");
+    
+>>>>>>> bdcaa6de52550e31e5603aa9d2c83bee7fa8b9b5
     clearInterval(timerRef.current);
     setStatus("processing");
 
@@ -264,6 +278,7 @@ export default function Checkout() {
             </div>
           </div>
 
+<<<<<<< HEAD
           {/* PIN Input */}
           <div style={{ marginBottom: "1.5rem" }}>
             <label style={{ fontSize: 12, fontWeight: 500, color: C.forest + "60", display: "block", marginBottom: 5 }}>PIN (6 Haneli Şifre)</label>
@@ -288,6 +303,33 @@ export default function Checkout() {
             {pinError && <p style={{ color: "#DC2626", fontSize: 11, marginTop: 4 }}>{pinError}</p>}
           </div>
 
+=======
+          {/* CVV Input */}
+          <div style={{ marginBottom: "1.5rem" }}>
+            <label style={{ fontSize: 12, fontWeight: 500, color: C.forest + "60", display: "block", marginBottom: 5 }}>Güvenlik Kodu (CVV)</label>
+            <input
+              type="password"
+              inputMode="numeric"
+              placeholder="•••"
+              maxLength={4}
+              value={cvv}
+              onChange={e => setCvv(e.target.value.replace(/\D/g, "").slice(0, 4))}
+              style={{
+                width: "100%", boxSizing: "border-box",
+                padding: "0.75rem",
+                border: `1.5px solid ${cvvError ? "#DC2626" : C.sage}`,
+                borderRadius: 12, fontSize: 16, color: C.forest,
+                outline: "none", fontFamily: "inherit",
+                backgroundColor: "#fff",
+                letterSpacing: "0.2em",
+                textAlign: "center"
+              }}
+            />
+            {cvvError && <p style={{ color: "#DC2626", fontSize: 11, marginTop: 4, marginHorizontal: 4 }}>{cvvError}</p>}
+          </div>
+
+          {/* Butonlar */}
+>>>>>>> bdcaa6de52550e31e5603aa9d2c83bee7fa8b9b5
           <div style={{ display: "flex", gap: 10 }}>
             <button
               onClick={handleReject}
