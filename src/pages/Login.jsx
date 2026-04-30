@@ -61,19 +61,13 @@ export default function Login() {
 
         {/* Logo */}
         <div style={{ textAlign:"center", marginBottom:"2rem" }}>
-          <div style={{
-            display:"inline-flex", alignItems:"center", justifyContent:"center",
-            width:56, height:56, borderRadius:"50%", backgroundColor:C.forest, marginBottom:"0.75rem",
-          }}>
-            <svg width="26" height="26" viewBox="0 0 24 24" fill="none">
-              <path d="M9.5 9.5C9.5 8.67 10.17 8 11 8h2c.83 0 1.5.67 1.5 1.5S13.83 11 13 11h-2c-.83 0-1.5.67-1.5 1.5S10.17 14 11 14h2c.83 0 1.5-.67 1.5-1.5" stroke={C.green} strokeWidth="1.8" strokeLinecap="round"/>
-              <path d="M12 6v2M12 16v2" stroke={C.mint} strokeWidth="1.8" strokeLinecap="round"/>
-              <circle cx="12" cy="12" r="9.5" stroke={C.sage} strokeWidth="1.2"/>
-            </svg>
-          </div>
+          <img src="/logo.png" alt="ParaÜstü" style={{
+            width: 72, height: 72, objectFit: "contain", marginBottom: "0.75rem",
+          }} />
           <h1 style={{ color:C.forest, fontSize:26, fontWeight:700, margin:"0 0 4px" }}>ParaÜstü</h1>
           <p style={{ color:C.forest+"80", fontSize:13, margin:0 }}>Para üstünü yatırıma dönüştür</p>
         </div>
+
 
         {/* Kart */}
         <div style={{ backgroundColor:"#fff", borderRadius:16, border:`1px solid ${C.sage}`, padding:"2rem" }}>

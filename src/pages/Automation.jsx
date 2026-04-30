@@ -1,5 +1,4 @@
 import { useState, useMemo, useEffect } from "react";
-import Navbar from "../components/Navbar";
 import axiosInstance from "../api/axiosInstance";
 
 const C = {
@@ -324,9 +323,40 @@ export default function Automation() {
 
   return (
     <div style={{ backgroundColor: C.cream, minHeight: "100vh" }}>
-      <Navbar title="Otomasyon" />
+      {/* Drawer-style header */}
+      <div style={{
+        backgroundColor: C.forest,
+        padding: "0.75rem 1rem",
+        display: "flex", alignItems: "center", justifyContent: "space-between",
+        position: "sticky", top: 0, zIndex: 50,
+      }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+          <img src="/logo.png" alt="ParaÜstü" style={{ width: 28, height: 28, objectFit: "contain" }} />
+          <span style={{ color: C.cream, fontWeight: 600, fontSize: 15 }}>ParaÜstü</span>
+          <span style={{ color: C.cream, fontSize: 14, opacity: 0.5 }}>/</span>
+          <span style={{ color: C.cream, fontSize: 14, fontWeight: 500 }}>Otomasyon</span>
+        </div>
+        <button
+          onClick={() => window.history.back()}
+          style={{
+            width: 32, height: 32, borderRadius: "50%",
+            backgroundColor: C.green + "20",
+            border: "none", cursor: "pointer",
+            display: "flex", alignItems: "center", justifyContent: "center",
+          }}
+        >
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+            <path d="M18 6L6 18M6 6l12 12" stroke={C.sage} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
+        </button>
+      </div>
 
-      <main style={{ padding: "1.25rem 1rem", maxWidth: 480, margin: "0 auto", width: "100%", boxSizing: "border-box", flex: 1 }}>
+      {/* Drawer handle */}
+      <div style={{ display: "flex", justifyContent: "center", paddingTop: 10 }}>
+        <div style={{ width: 36, height: 4, backgroundColor: C.sage, borderRadius: 99 }} />
+      </div>
+
+      <main style={{ padding: "1rem 1rem 1.25rem", maxWidth: 480, margin: "0 auto", width: "100%", boxSizing: "border-box", flex: 1 }}>
         <div style={{ marginBottom: "1.25rem" }}>
           <h1 style={{ fontSize: 20, fontWeight: 700, color: C.forest, margin: "0 0 3px" }}>Otomasyon</h1>
           <p style={{ fontSize: 13, color: C.forest + "60", margin: 0 }}>
