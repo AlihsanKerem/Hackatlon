@@ -23,6 +23,27 @@ const MOCK_ROUNDING = {
 
 const MOCK_RULE = { symbol: "THYAO.IS", threshold: 100, isActive: true };
 
+const STOCKS = [
+  { symbol: "THYAO.IS", name: "Türk Hava Yolları", price: 318.40, sector: "Ulaşım" },
+  { symbol: "BIMAS.IS", name: "BİM Birleşik Mağazalar", price: 398.20, sector: "Perakende" },
+  { symbol: "AKBNK.IS", name: "Akbank", price: 61.30, sector: "Bankacılık" },
+  { symbol: "GARAN.IS", name: "Garanti Bankası", price: 112.80, sector: "Bankacılık" },
+  { symbol: "EREGL.IS", name: "Ereğli Demir Çelik", price: 54.60, sector: "Sanayi" },
+  { symbol: "KCHOL.IS", name: "Koç Holding", price: 187.30, sector: "Holding" },
+  { symbol: "SAHOL.IS", name: "Sabancı Holding", price: 98.50, sector: "Holding" },
+  { symbol: "SISE.IS", name: "Şişecam", price: 43.20, sector: "Sanayi" },
+  { symbol: "TCELL.IS", name: "Turkcell", price: 89.40, sector: "Teknoloji" },
+  { symbol: "TOASO.IS", name: "Tofaş Otomobil", price: 234.60, sector: "Otomotiv" },
+  { symbol: "FROTO.IS", name: "Ford Otosan", price: 1240.00, sector: "Otomotiv" },
+  { symbol: "ASELS.IS", name: "Aselsan", price: 76.10, sector: "Savunma" },
+  { symbol: "PGSUS.IS", name: "Pegasus Hava Taşımacılığı", price: 892.50, sector: "Ulaşım" },
+  { symbol: "KOZAL.IS", name: "Koza Altın İşletmeleri", price: 543.20, sector: "Maden" },
+  { symbol: "EKGYO.IS", name: "Emlak Konut GYO", price: 18.90, sector: "GYO" },
+];
+
+const fmtPrice = (n) =>
+  new Intl.NumberFormat("tr-TR", { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(n);
+
 const ROUNDING_LABELS = {
   under10:    "10 TL altı işlemlerde geçerli",
   under100:   "10–100 TL arası işlemlerde geçerli",
@@ -367,6 +388,143 @@ function PinModal({ onClose }) {
   );
 }
 
+function AutomationModal({ currentRule, onSave, onDelete, onClose }) {
+  const [query, setQuery] = useState("");
+  const [saving, setSaving] = useState(false);
+
+  const filtered = query.trim()
+    ? STOCKS.filter(s =>
+        s.symbol.toLowerCase().includes(query.toLowerCase()) ||
+        s.name.toLowerCase().includes(query.toLowerCase()) ||
+        s.sector.toLowerCase().includes(query.toLowerCase())
+      )
+    : STOCKS;
+
+  const handleSelect = async (stock) => {
+    setSaving(true);
+    const userId = localStorage.getItem("userId");
+    try {
+      await axiosInstance.post(`/automation/save?userId=${userId}`, {
+        active: true,
+        symbol: stock.symbol,
+        threshold: stock.price
+      });
+    } catch (err) {
+      console.error("Save automation error:", err);
+    }
+    setSaving(false);
+    onSave({ symbol: stock.symbol, threshold: stock.price, isActive: true });
+  };
+
+  const handleDelete = async () => {
+    const userId = localStorage.getItem("userId");
+    try {
+      await axiosInstance.delete(`/automation?userId=${userId}`);
+    } catch (err) {
+      console.error("Delete automation error:", err);
+    }
+    onDelete();
+  };
+
+  return (
+    <>
+      <div onClick={onClose} style={{ position: "fixed", inset: 0, backgroundColor: "rgba(1,38,25,0.5)", zIndex: 200 }} />
+      <div style={{
+        position: "fixed", bottom: 0, left: 0, right: 0,
+        backgroundColor: "#fff", borderRadius: "16px 16px 0 0",
+        padding: "1.5rem", zIndex: 201, fontFamily: "inherit",
+        maxWidth: 480, margin: "0 auto", maxHeight: "85vh", overflowY: "auto",
+      }}>
+        <div style={{ width: 36, height: 4, backgroundColor: C.sage, borderRadius: 99, margin: "0 auto 1.25rem" }} />
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1rem" }}>
+          <h3 style={{ fontSize: 16, fontWeight: 600, color: C.forest, margin: 0 }}>Otomasyon Kuralı</h3>
+          <button onClick={onClose} style={{ background: "none", border: "none", cursor: "pointer", color: C.forest + "60", fontSize: 20 }}>✕</button>
+        </div>
+
+        {/* Aktif kural varsa göster */}
+        {currentRule && (
+          <div style={{
+            backgroundColor: C.forest, borderRadius: 12, padding: "0.85rem 1rem", marginBottom: "1rem",
+            display: "flex", alignItems: "center", justifyContent: "space-between",
+          }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+              <div style={{
+                width: 34, height: 34, borderRadius: 8, backgroundColor: C.green + "25",
+                display: "flex", alignItems: "center", justifyContent: "center",
+                fontSize: 9, fontWeight: 700, color: C.green,
+              }}>
+                {currentRule.symbol.split(".")[0].slice(0, 4)}
+              </div>
+              <div>
+                <p style={{ fontSize: 13, fontWeight: 600, color: "#fff", margin: "0 0 1px" }}>{currentRule.symbol}</p>
+                <p style={{ fontSize: 11, color: C.mint, margin: 0 }}>Aktif kural</p>
+              </div>
+            </div>
+            <button onClick={handleDelete} style={{
+              padding: "5px 10px", borderRadius: 7, border: "1px solid #DC262640",
+              backgroundColor: "transparent", color: "#DC2626", fontSize: 11, fontWeight: 600,
+              cursor: "pointer", fontFamily: "inherit",
+            }}>Sil</button>
+          </div>
+        )}
+
+        {/* Arama */}
+        <input
+          type="text" placeholder="Hisse ara (sembol, şirket adı)..."
+          value={query} onChange={e => setQuery(e.target.value)}
+          style={{
+            width: "100%", boxSizing: "border-box", padding: "0.6rem 0.85rem",
+            border: `1.5px solid ${C.sage}`, borderRadius: 8, fontSize: 14,
+            color: C.forest, outline: "none", fontFamily: "inherit",
+            backgroundColor: "#fff", marginBottom: "0.75rem",
+          }}
+        />
+
+        {/* Hisse listesi */}
+        <div style={{ maxHeight: 280, overflowY: "auto", borderRadius: 10, border: `1px solid ${C.sage}` }}>
+          {filtered.map((stock, i) => {
+            const isActive = currentRule?.symbol === stock.symbol;
+            return (
+              <div key={stock.symbol} onClick={() => !saving && handleSelect(stock)} style={{
+                display: "flex", alignItems: "center", padding: "0.7rem 0.85rem",
+                borderBottom: i < filtered.length - 1 ? `1px solid ${C.sage}40` : "none",
+                backgroundColor: isActive ? C.green + "08" : "transparent",
+                cursor: saving ? "not-allowed" : "pointer",
+                transition: "background-color 0.15s",
+              }}>
+                <div style={{
+                  width: 34, height: 34, borderRadius: 8,
+                  backgroundColor: isActive ? C.forest : C.cream,
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                  marginRight: 10, flexShrink: 0,
+                  fontSize: 9, fontWeight: 700, color: isActive ? C.mint : C.forest + "60",
+                }}>
+                  {stock.symbol.split(".")[0].slice(0, 4)}
+                </div>
+                <div style={{ flex: 1 }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                    <p style={{ fontSize: 13, fontWeight: 600, color: C.forest, margin: 0 }}>{stock.symbol}</p>
+                    {isActive && <span style={{ fontSize: 9, fontWeight: 700, backgroundColor: C.green + "20", color: C.green, padding: "2px 6px", borderRadius: 99 }}>AKTİF</span>}
+                  </div>
+                  <p style={{ fontSize: 11, color: C.forest + "55", margin: "1px 0 0" }}>{stock.name}</p>
+                </div>
+                <div style={{ textAlign: "right" }}>
+                  <p style={{ fontSize: 12, fontWeight: 500, color: C.forest, margin: 0 }}>{fmtPrice(stock.price)} ₺</p>
+                  <p style={{ fontSize: 10, color: C.forest + "40", margin: 0 }}>{stock.sector}</p>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
+        <p style={{ fontSize: 11, color: C.forest + "45", textAlign: "center", marginTop: "0.75rem" }}>
+          Hisse seçtiğinde para üstün fiyata ulaşınca otomatik alınır.
+        </p>
+      </div>
+    </>
+  );
+}
+
 export default function Settings() {
   const navigate = useNavigate();
   const { logout } = useAuth();
@@ -374,6 +532,7 @@ export default function Settings() {
   const [roundingPrefs, setRoundingPrefs] = useState(MOCK_ROUNDING);
   const [rule, setRule] = useState(null);
   const [showRounding, setShowRounding] = useState(false);
+  const [showAutomation, setShowAutomation] = useState(false);
   const [showPin, setShowPin] = useState(false);
   const [showLogout, setShowLogout] = useState(false);
   const [toast, setToast] = useState(null);
@@ -555,7 +714,7 @@ export default function Settings() {
                 <p style={{ fontSize: 13, color: C.forest + "50", textAlign: "center", marginBottom: "0.75rem" }}>Aktif otomasyon kuralı yok.</p>
               )}
               <button
-                onClick={() => navigate("/automation")}
+                onClick={() => setShowAutomation(true)}
                 style={{
                   width: "100%", padding: "0.6rem",
                   borderRadius: 8, border: `1.5px solid ${C.green}`,
@@ -601,6 +760,12 @@ export default function Settings() {
       </main>
 
       {showRounding && <RoundingModal prefs={roundingPrefs} onSave={handleSaveRounding} onClose={() => setShowRounding(false)} />}
+      {showAutomation && <AutomationModal
+        currentRule={rule}
+        onSave={(newRule) => { setRule(newRule); setShowAutomation(false); showToast("Otomasyon kuralı kaydedildi"); }}
+        onDelete={() => { setRule(null); setShowAutomation(false); showToast("Kural silindi"); }}
+        onClose={() => setShowAutomation(false)}
+      />}
       {showPin      && <PinModal onClose={() => setShowPin(false)} />}
       {showLogout   && (
         <div style={{ position: "fixed", inset: 0, backgroundColor: "rgba(1,38,25,0.45)", zIndex: 200, display: "flex", alignItems: "center", justifyContent: "center", padding: "1rem" }} onClick={() => setShowLogout(false)}>
